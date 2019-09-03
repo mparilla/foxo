@@ -1,0 +1,60 @@
+---
+title: "Download raw files from GEO"
+author: "mparilla"
+date: "2019-07-03"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Setup
+
+Clear workspace
+```{r}
+rm(list = ls())
+```
+
+```{r}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+```{r}
+library("tidyverse")
+library("GEOquery")
+library("Biobase")
+library("affy")
+```
+
+
+First we will obtain the datasets from the GEO.
+
+```{r}
+# download normalized data with full metadata
+gse6338 <- getGEO("GSE6338")
+```
+
+```{r}
+str(gse6338)
+saveRDS(gse6338, "data/gse_6338.rds")
+```
+
+```{r}
+# get raw data from gse6338
+filePaths = getGEOSuppFiles("GSE6338", makeDirectory = TRUE)
+```
+
+Used terminal window to move tar archive to `data/GSE6338` and unpack.
+
+Review phenotype data
+```{r}
+meta6338 <- phenoData(gse6338[[1]])
+meta_data46903 <- pData(meta6338)
+class(meta_data46903)
+str(meta_data46903)
+```
+
+## Reading in raw data
+
+Using affy package
+https://bioconductor.org/packages/release/bioc/vignettes/affy/inst/doc/affy.pdf
+
