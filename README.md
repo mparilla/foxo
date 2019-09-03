@@ -1,3 +1,5 @@
-# Output
+# foxo
 
-Save processed data files here.
+A [workflowr][] project.
+
+[workflowr]: https://github.com/jdblischak/workflowr
