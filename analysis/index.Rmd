@@ -8,4 +8,8 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website.
+Welcome to my research website for Foxo.
+
+First we will download the raw data from GEO. 
+
+* [Data download](geodownload.html)
