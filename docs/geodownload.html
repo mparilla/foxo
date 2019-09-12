@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="mparilla" />
+
+<meta name="date" content="2019-07-03" />
+
+<title>Download raw files from GEO</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">foxo</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Download raw files from GEO</h1>
+<h4 class="author">mparilla</h4>
+<h4 class="date">2019-07-03</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2019-09-12
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>foxo/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.4.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20190703code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20190703)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20190703code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20190703)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotreecf95f7f273b3e5ccdf0d06c9f84658e3b0517cectargetblankcf95f7fa"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/mparilla/foxo/tree/cf95f7f273b3e5ccdf0d06c9f84658e3b0517cec" target="_blank">cf95f7f</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotreecf95f7f273b3e5ccdf0d06c9f84658e3b0517cectargetblankcf95f7fa" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rproj.user/
+
+Untracked files:
+    Untracked:  analysis/dge_analysis.Rmd
+    Untracked:  analysis/geodownload2.Rmd
+    Untracked:  data/GSE14879/
+    Untracked:  data/GSE19069/
+    Untracked:  data/GSE6338/
+    Untracked:  data/bakker_foxo3_up.gmt
+    Untracked:  data/delpuech_foxo3_up.gmt
+    Untracked:  data/foxo3_predicted_targets.gmt
+    Untracked:  data/gse_14879.rds
+    Untracked:  data/gse_19069.rds
+    Untracked:  data/gse_6338.rds
+    Untracked:  data/wt_vs_foxo1_foxo3_KO_up.gmt
+    Untracked:  output/combined_exprs.rds
+    Untracked:  output/combined_pdata_fixed_groups.csv
+    Untracked:  output/combined_pdata_prelim_groups.csv
+    Untracked:  output/tcl_eset.rds
+
+Unstaged changes:
+    Modified:   analysis/index.Rmd
+    Deleted:    combined_pdata_fixed_groups.csv
+    Deleted:    combined_pdata_prelim_groups.csv
+    Modified:   foxo.Rproj
+    Deleted:    geodownload.Rmd
+    Deleted:    geodownload2.Rmd
+    Deleted:    index.Rmd
+    Deleted:    license.Rmd
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/mparilla/foxo/blob/cf95f7f273b3e5ccdf0d06c9f84658e3b0517cec/analysis/geodownload.Rmd" target="_blank">cf95f7f</a>
+</td>
+<td>
+mleukam
+</td>
+<td>
+2019-09-12
+</td>
+<td>
+wflow_publish(“analysis/geodownload.Rmd”)
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>Clear workspace</p>
+<pre class="r"><code>rm(list = ls())</code></pre>
+<p>Set default to not run chunks when knitting</p>
+<pre class="r"><code>knitr::opts_chunk$set(eval = FALSE)</code></pre>
+<p>Load packages</p>
+<pre class="r"><code>library(&quot;tidyverse&quot;)
+library(&quot;GEOquery&quot;)
+library(&quot;Biobase&quot;)
+library(&quot;affy&quot;)</code></pre>
+</div>
+<div id="import-datasets" class="section level2">
+<h2>Import Datasets</h2>
+<div id="gse6338" class="section level4">
+<h4>GSE6338</h4>
+<p>We will use the metadata and clinical annotation from the normalizeed data and then combine this with the raw CEL intensity readings that we normalize ourselves.</p>
+<pre class="r"><code># download normalized data with full metadata
+gse6338 &lt;- getGEO(&quot;GSE6338&quot;)
+saveRDS(gse6338, &quot;data/gse_6338.rds&quot;)</code></pre>
+<pre class="r"><code># load previously downloaded data
+gse6338 &lt;- readRDS(&quot;data/gse_6338.rds&quot;)
+str(gse6338)
+meta6338 &lt;- phenoData(gse6338[[1]])
+meta_data6338 &lt;- pData(meta6338)
+class(meta_data6338)
+str(meta_data6338)</code></pre>
+<pre class="r"><code># get raw data from gse6338
+filePaths = getGEOSuppFiles(&quot;GSE6338&quot;, makeDirectory = TRUE)</code></pre>
+</div>
+<div id="gse14879" class="section level4">
+<h4>GSE14879</h4>
+<pre class="r"><code># download normalized data with full metadata
+gse14879 &lt;- getGEO(&quot;GSE14879&quot;)
+saveRDS(gse14879, &quot;data/gse_14879.rds&quot;)</code></pre>
+<pre class="r"><code># load previously downloaded data
+gse14879 &lt;- readRDS(&quot;data/gse_14879.rds&quot;)
+str(gse14879)
+meta14879 &lt;- phenoData(gse14879[[1]])
+meta_data14879 &lt;- pData(meta14879)
+class(meta_data14879)
+str(meta_data14879)</code></pre>
+<pre class="r"><code># get raw data from gse14879
+filePaths = getGEOSuppFiles(&quot;GSE14879&quot;, makeDirectory = TRUE)</code></pre>
+</div>
+<div id="gse19069" class="section level4">
+<h4>GSE19069</h4>
+<pre class="r"><code># download normalized data with full metadata
+gse19069 &lt;- getGEO(&quot;GSE19069&quot;)
+str(gse19069)
+saveRDS(gse19069, &quot;data/gse_19069.rds&quot;)</code></pre>
+<pre class="r"><code># load previously downloaded data
+gse19069 &lt;- readRDS(&quot;data/gse_19069.rds&quot;)
+meta19069 &lt;- phenoData(gse19069[[1]])
+meta_data19069 &lt;- pData(meta19069)
+class(meta_data19069)
+str(meta_data19069)</code></pre>
+<pre class="r"><code># get raw data from gse19069
+filePaths = getGEOSuppFiles(&quot;GSE19069&quot;, makeDirectory = TRUE)</code></pre>
+</div>
+</div>
+<div id="combine-cel-files" class="section level2">
+<h2>Combine CEL files</h2>
+<p>Using affy package <a href="https://bioconductor.org/packages/release/bioc/vignettes/affy/inst/doc/affy.pdf" class="uri">https://bioconductor.org/packages/release/bioc/vignettes/affy/inst/doc/affy.pdf</a></p>
+<p>Following this tutorial: <a href="http://rstudio-pubs-static.s3.amazonaws.com/16793_fba4b435fe4e4c17bf6a13b5d8d05eec.html" class="uri">http://rstudio-pubs-static.s3.amazonaws.com/16793_fba4b435fe4e4c17bf6a13b5d8d05eec.html</a></p>
+<pre class="r"><code>combined_GSE6338 &lt;- ReadAffy(celfile.path = &quot;data/GSE6338&quot;)
+combined_GSE19069 &lt;- ReadAffy(celfile.path = &quot;data/GSE19069&quot;)
+combined_GSE14879 &lt;- ReadAffy(celfile.path = &quot;data/GSE14879&quot;)</code></pre>
+<p>Normalization</p>
+<pre class="r"><code>GSE6338_rma &lt;- rma(combined_GSE6338)
+GSE19069_rma &lt;- rma(combined_GSE19069)
+GSE14879_rma &lt;- rma(combined_GSE14879)
+
+# data now in the format of normalized expressionSet</code></pre>
+<p>Expressionset reference: <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf" class="uri">https://www.bioconductor.org/packages/release/bioc/vignettes/Biobase/inst/doc/ExpressionSetIntroduction.pdf</a></p>
+</div>
+<div id="data-cleaning" class="section level2">
+<h2>Data cleaning</h2>
+<p>Get phenotype data from expressionsets</p>
+<pre class="r"><code>p14879 &lt;- pData(gse14879[[1]])
+p6338 &lt;- pData(gse6338[[1]])
+p19069 &lt;- pData(gse19069[[1]])</code></pre>
+<pre class="r"><code>p14879_fixed &lt;- p14879 %&gt;%
+  as_tibble() %&gt;%
+  mutate(rnames = geo_accession) %&gt;%
+  dplyr::rename(group = title) %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;rnames&quot;)
+p14879_fixed[1:5,1:5]</code></pre>
+<p>Fix column names for expression data</p>
+<pre class="r"><code>exp6338 &lt;- exprs(GSE6338_rma)
+exp6338[1:5, 1:5]
+
+exp6338_fixed &lt;- exp6338 %&gt;%
+  t() %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  tidyr::separate(sample_id, 
+                  into = c(&quot;sample_id&quot;, NA), 
+                  remove = TRUE) %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;sample_id&quot;) %&gt;%
+  as.matrix() %&gt;%
+  t()
+
+exp6338_fixed[1:5, 1:5]  
+
+#-----------------------------------------
+exp19069 &lt;- exprs(GSE19069_rma)
+exp19069[1:5, 1:5]
+
+exp19069_fixed &lt;- exp19069 %&gt;%
+  t() %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  tidyr::separate(sample_id, 
+                  into = c(&quot;sample_id&quot;, NA), 
+                  remove = TRUE) %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;sample_id&quot;) %&gt;%
+  as.matrix() %&gt;%
+  t()
+
+exp19069_fixed[1:5, 1:5]  
+
+#-----------------------------------------
+exp14879 &lt;- exprs(GSE14879_rma)
+exp14879[1:5, 1:5]
+
+exp14879_fixed &lt;- exp14879 %&gt;%
+  t() %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  tidyr::separate(sample_id, 
+                  into = c(&quot;sample_id&quot;, NA), 
+                  remove = TRUE) %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;sample_id&quot;) %&gt;%
+  as.matrix() %&gt;%
+  t()
+
+exp14879_fixed[1:5, 1:5]  </code></pre>
+</div>
+<div id="assemble-into-single-dataframes" class="section level2">
+<h2>Assemble into single dataframes</h2>
+<p>Expression data</p>
+<pre class="r"><code>identical(rownames(exp6338_fixed), rownames(exp14879_fixed))
+identical(rownames(exp19069_fixed), rownames(exp14879_fixed))
+
+exp6338_df &lt;- exp6338_fixed %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;probe_id&quot;) %&gt;%
+  as_tibble()
+
+exp14879_df &lt;- exp14879_fixed %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;probe_id&quot;) %&gt;%
+  as_tibble()
+
+exp19069_df &lt;- exp19069_fixed %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;probe_id&quot;) %&gt;%
+  as_tibble()
+  
+combined_exprs &lt;- exp6338_df %&gt;%
+  left_join(exp14879_df, by = &quot;probe_id&quot;) %&gt;%
+  left_join(exp19069_df, by = &quot;probe_id&quot;) %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;probe_id&quot;) %&gt;%
+  as.matrix()
+
+combined_exprs[1:5, 1:5]
+dim(combined_exprs)
+str(combined_exprs)
+
+# save for later use
+saveRDS(combined_exprs, &quot;output/combined_exprs.rds&quot;)</code></pre>
+<p>Phenotype data</p>
+<pre class="r"><code>combined_exprs &lt;- readRDS(&quot;output/combined_exprs.rds&quot;)
+
+p14879 &lt;- pData(gse14879[[1]])
+p6338 &lt;- pData(gse6338[[1]])
+p19069
+
+p14879_df &lt;- p14879_fixed %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  print()
+
+p6338_df &lt;- p6338 %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  dplyr::rename(group = title) %&gt;%
+  print()
+
+p19069_df &lt;- p19069 %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  dplyr::rename(group = title) %&gt;%
+  print()
+
+match_table &lt;- colnames(combined_exprs) %&gt;%
+  enframe() %&gt;%
+  dplyr::select(sample_id = value) %&gt;%
+  print()
+
+subtable1 &lt;- match_table %&gt;%
+  left_join(p14879_df, by = &quot;sample_id&quot;)
+
+subtable2 &lt;- subtable1 %&gt;%
+  left_join(p6338_df, by = &quot;sample_id&quot;)
+
+combined_pdata &lt;- subtable2 %&gt;%
+  left_join(p19069_df, by = &quot;sample_id&quot;) %&gt;%
+  print()
+
+combined_pdata_groups &lt;- combined_pdata %&gt;%
+  mutate(group.x = as.character(group.x),
+         group.y = as.character(group.y),
+         group = as.character(group)) %&gt;%
+  mutate(groups1 = coalesce(group.x, group.y)) %&gt;%
+  mutate(groups = coalesce(group, groups1)) %&gt;%
+  dplyr::select(sample_id, groups, everything()) %&gt;%
+  print()
+
+write_csv(combined_pdata_groups, &quot;output/combined_pdata_prelim_groups.csv&quot;)</code></pre>
+<pre class="r"><code>combined_pdata_fixed &lt;- read_csv(&quot;output/combined_pdata_fixed_groups.csv&quot;)
+
+combined_pdata_fixed
+summary(as.factor(combined_pdata_fixed$collapsed_group))
+
+pheno_data &lt;- combined_pdata_fixed %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;sample_id&quot;)
+
+pheno_data[1:5, 1:5]
+
+cnames &lt;- colnames(combined_exprs) %&gt;% as.character() %&gt;% print()
+rnames &lt;- rownames(pheno_data) %&gt;% as.character() %&gt;% print()
+identical(rnames, cnames)
+setdiff(rnames, cnames)</code></pre>
+<p>Taken from documentation for bioconductor expression</p>
+<pre class="r"><code># create a frame for annotation of column names in metadata
+# will be empty for now
+varnames &lt;- colnames(pheno_data)
+vardata &lt;- data.frame(labelDescription = varnames, row.names = varnames)
+
+# build an AnnotatedDataFrame
+tcl_phenoData &lt;- new(&quot;AnnotatedDataFrame&quot;, 
+                     data = pheno_data,
+                     varMetadata = vardata)
+
+# convert expression data to matrix
+# already done
+
+# make annotation
+
+anno = &quot;Three datasets downloaded from GEO: GSE6338, GSE14879, GSE19069. Then downloaded raw CEL files and normalized, replaced expression data with our own normalized data and refactored phenotype data with groups corresponding to lymphoma type or control.&quot;
+
+tcl_eset &lt;- ExpressionSet(assayData = combined_exprs,
+                          phenoData = tcl_phenoData,
+                          annotation = anno)
+
+saveRDS(tcl_eset, &quot;output/tcl_eset.rds&quot;)</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
