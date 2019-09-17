@@ -13,3 +13,8 @@ Welcome to my research website for Foxo.
 First we will download the raw data from GEO. 
 
 * [Data download](geodownload.html)
+
+Next we will look at differential expression of FOXO3 targets in individual samples by disease group using GSVA
+
+* [GSVA](dge_analysis.Rmd)
+
