@@ -12,7 +12,7 @@
 
 
 
-<title>Home</title>
+<title>FOXO3 Project</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -300,7 +300,7 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">FOXO3 Project</h1>
 
 </div>
 
@@ -356,10 +356,10 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree350233865c29fd34d2e4565b5830353435eb5c59targetblank3502338a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/mparilla/foxo/tree/350233865c29fd34d2e4565b5830353435eb5c59" target="_blank">3502338</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree7452f995e35935d6137c25f56bf1e91bbdbb1568targetblank7452f99a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/mparilla/foxo/tree/7452f995e35935d6137c25f56bf1e91bbdbb1568" target="_blank">7452f99</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree350233865c29fd34d2e4565b5830353435eb5c59targetblank3502338a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree7452f995e35935d6137c25f56bf1e91bbdbb1568targetblank7452f99a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -412,6 +412,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/mparilla/foxo/blob/7452f995e35935d6137c25f56bf1e91bbdbb1568/analysis/index.Rmd" target="_blank">7452f99</a>
+</td>
+<td>
+mleukam
+</td>
+<td>
+2019-09-17
+</td>
+<td>
+initial website build
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/mparilla/foxo/fdf12acb594406f9e0d153b37730b39c9f930627/docs/index.html" target="_blank">fdf12ac</a>
+</td>
+<td>
+mleukam
+</td>
+<td>
+2019-09-17
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 html
@@ -487,12 +521,12 @@ Start workflowr project.
 </div>
 </div>
 </div>
-<p>Welcome to my research website for Foxo.</p>
-<p>First we will download the raw data from GEO.</p>
+<p>Welcome to the computational lab notebook for a project examining the role of FoxO3 in T-cell lymphoma.</p>
+<p>First we downloaded raw data from GEO. In this notebook, the raw data is normalized, and the phenotype data is cleaned and prepared. An expression-set object is created as the last step.</p>
 <ul>
 <li><a href="geodownload.html">Data download</a></li>
 </ul>
-<p>Next we will look at differential expression of FOXO3 targets in individual samples by disease group using GSVA</p>
+<p>Next we will look at differential expression of FOXO3 targets in individual samples by disease group using GSVA. In this notebook, the expression data is filtered for protein coding genes only, and the probes are collapsed to gene level. Four gene sets containing different FOXO targets are used to investigate patterns of expression among different disease groups.</p>
 <ul>
 <li><a href="dge_analysis.Rmd">GSVA</a></li>
 </ul>
