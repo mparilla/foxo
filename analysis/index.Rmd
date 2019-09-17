@@ -1,5 +1,5 @@
 ---
-title: "Home"
+title: "FOXO3 Project"
 site: workflowr::wflow_site
 output:
   workflowr::wflow_html:
@@ -8,13 +8,13 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to my research website for Foxo.
+Welcome to the computational lab notebook for a project examining the role of FoxO3 in T-cell lymphoma.
 
-First we will download the raw data from GEO. 
+First we downloaded raw data from GEO. In this notebook, the raw data is normalized, and the phenotype data is cleaned and prepared. An expression-set object is created as the last step.
 
 * [Data download](geodownload.html)
 
-Next we will look at differential expression of FOXO3 targets in individual samples by disease group using GSVA
+Next we will look at differential expression of FOXO3 targets in individual samples by disease group using GSVA. In this notebook, the expression data is filtered for protein coding genes only, and the probes are collapsed to gene level. Four gene sets containing different FOXO targets are used to investigate patterns of expression among different disease groups.
 
 * [GSVA](dge_analysis.Rmd)
 
