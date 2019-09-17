@@ -14,3 +14,5 @@ foxo.Rproj
 *.CEL
 data/GSE14879/GSE14879_RAW.tar
 *.tar
+output/tcl_eset.rds
+output/combined_exprs.rds
