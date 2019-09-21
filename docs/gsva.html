@@ -12,9 +12,9 @@
 
 <meta name="author" content="mleukam" />
 
-<meta name="date" content="2019-09-12" />
+<meta name="date" content="2019-09-20" />
 
-<title>dge_analysis</title>
+<title>gsva</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -372,9 +372,9 @@ div.section {
 
 
 
-<h1 class="title toc-ignore">dge_analysis</h1>
+<h1 class="title toc-ignore">gsva</h1>
 <h4 class="author">mleukam</h4>
-<h4 class="date">2019-09-12</h4>
+<h4 class="date">2019-09-20</h4>
 
 </div>
 
@@ -559,7 +559,7 @@ Message
 Rmd
 </td>
 <td>
-<a href="https://github.com/mparilla/foxo/blob/54ce0e77ac67fab6f6594627f578598d79c84231/analysis/dge_analysis.Rmd" target="_blank">54ce0e7</a>
+<a href="https://github.com/mparilla/foxo/blob/54ce0e77ac67fab6f6594627f578598d79c84231/analysis/gsva.Rmd" target="_blank">54ce0e7</a>
 </td>
 <td>
 mleukam
@@ -569,57 +569,6 @@ mleukam
 </td>
 <td>
 working GSVA and differential gene analysis with limma
-</td>
-</tr>
-<tr>
-<td>
-html
-</td>
-<td>
-<a href="https://rawcdn.githack.com/mparilla/foxo/051b046a3ba96cc573c886da0a8062a583fdb909/docs/dge_analysis.html" target="_blank">051b046</a>
-</td>
-<td>
-mleukam
-</td>
-<td>
-2019-09-17
-</td>
-<td>
-Build site.
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/mparilla/foxo/blob/c196779def168aae1345216e6c4f93baff30b086/analysis/dge_analysis.Rmd" target="_blank">c196779</a>
-</td>
-<td>
-mleukam
-</td>
-<td>
-2019-09-17
-</td>
-<td>
-wflow_publish(“analysis/dge_analysis.Rmd”)
-</td>
-</tr>
-<tr>
-<td>
-Rmd
-</td>
-<td>
-<a href="https://github.com/mparilla/foxo/blob/c0e972d4e7e8c502e8a66d9faa77904ec75408d9/analysis/dge_analysis.Rmd" target="_blank">c0e972d</a>
-</td>
-<td>
-mleukam
-</td>
-<td>
-2019-09-12
-</td>
-<td>
-gene sets and updated notebooks
 </td>
 </tr>
 </tbody>
@@ -633,63 +582,58 @@ gene sets and updated notebooks
 <h2>Setup</h2>
 <p>clear the workspace</p>
 <pre class="r"><code>rm(list = ls())</code></pre>
-<pre class="r"><code>library(tidyverse)</code></pre>
-<pre><code>── Attaching packages ─────────────────────────────────── tidyverse 1.2.1 ──</code></pre>
-<pre><code>✔ ggplot2 3.2.0     ✔ purrr   0.3.2
-✔ tibble  2.1.3     ✔ dplyr   0.8.3
-✔ tidyr   0.8.3     ✔ stringr 1.4.0
-✔ readr   1.3.1     ✔ forcats 0.4.0</code></pre>
-<pre><code>── Conflicts ────────────────────────────────────── tidyverse_conflicts() ──
-✖ dplyr::filter() masks stats::filter()
-✖ dplyr::lag()    masks stats::lag()</code></pre>
-<pre class="r"><code>library(limma)
-library(Biobase)</code></pre>
-<pre><code>Loading required package: BiocGenerics</code></pre>
-<pre><code>Loading required package: parallel</code></pre>
-<pre><code>
-Attaching package: &#39;BiocGenerics&#39;</code></pre>
-<pre><code>The following objects are masked from &#39;package:parallel&#39;:
-
-    clusterApply, clusterApplyLB, clusterCall, clusterEvalQ,
-    clusterExport, clusterMap, parApply, parCapply, parLapply,
-    parLapplyLB, parRapply, parSapply, parSapplyLB</code></pre>
-<pre><code>The following object is masked from &#39;package:limma&#39;:
-
-    plotMA</code></pre>
-<pre><code>The following objects are masked from &#39;package:dplyr&#39;:
-
-    combine, intersect, setdiff, union</code></pre>
-<pre><code>The following objects are masked from &#39;package:stats&#39;:
-
-    IQR, mad, sd, var, xtabs</code></pre>
-<pre><code>The following objects are masked from &#39;package:base&#39;:
-
-    anyDuplicated, append, as.data.frame, basename, cbind,
-    colMeans, colnames, colSums, dirname, do.call, duplicated,
-    eval, evalq, Filter, Find, get, grep, grepl, intersect,
-    is.unsorted, lapply, lengths, Map, mapply, match, mget, order,
-    paste, pmax, pmax.int, pmin, pmin.int, Position, rank, rbind,
-    Reduce, rowMeans, rownames, rowSums, sapply, setdiff, sort,
-    table, tapply, union, unique, unsplit, which, which.max,
-    which.min</code></pre>
-<pre><code>Welcome to Bioconductor
-
-    Vignettes contain introductory material; view with
-    &#39;browseVignettes()&#39;. To cite Bioconductor, see
-    &#39;citation(&quot;Biobase&quot;)&#39;, and for packages &#39;citation(&quot;pkgname&quot;)&#39;.</code></pre>
-<pre class="r"><code>library(biomaRt)</code></pre>
 <p>Set default to not run chunks when knitting (long operations in notebook make updating html output time prohibitive)</p>
 <pre class="r"><code>knitr::opts_chunk$set(eval = FALSE)</code></pre>
+<p>Read in packages</p>
+<pre class="r"><code>library(tidyverse)
+library(edgeR)
+library(limma)
+library(msigdbr)
+library(GSA)
+library(biomaRt)
+library(Biobase)
+library(GSVA)
+library(ggsci)
+library(ggpubr)
+library(ggbeeswarm)
+library(broom)</code></pre>
 <p>Load data</p>
 <pre class="r"><code>tcl_eset &lt;- readRDS(&quot;output/tcl_eset.rds&quot;)</code></pre>
+</div>
+<div id="prepare-gene-sets" class="section level2">
+<h2>Prepare gene sets</h2>
+<p><a href="http://software.broadinstitute.org/gsea/msigdb/search.jsp" class="uri">http://software.broadinstitute.org/gsea/msigdb/search.jsp</a></p>
+<pre class="r"><code>gsetnames &lt;- c(&quot;BAKKER_FOXO3_TARGETS_UP&quot;, &quot;DELPUECH_FOXO3_TARGETS_UP&quot;, &quot;GSE21678_WT_VS_FOXO1_FOXO3_KO_TREG_UP&quot;, &quot;FOXO3_01&quot;)
+
+# use msigdbr to retreive human gene sets from MSigDB
+m_df = msigdbr(species = &quot;Homo sapiens&quot;)
+
+# review subcategories
+summary(as.factor(m_df$gs_subcat))
+
+# select gene sets from msigdbr-retreived gene list with vector of gene set names
+my_gsets &lt;- m_df %&gt;%
+  dplyr::filter(gs_name %in% gsetnames)
+summary(as.factor(my_gsets$gs_name))
+
+# make a list of gene symbol vectors for each gene set
+gsets_msig &lt;- my_gsets %&gt;%
+  dplyr::select(gs_name, human_gene_symbol) %&gt;%
+  nest(key = &quot;human_gene_symbol&quot;) %&gt;%
+  print()
+gsets_msig_list &lt;- map(gsets_msig, as.list)
+gsets_vectors &lt;- gsets_msig_list$data %&gt;%
+  map(pull)
+names(gsets_vectors) &lt;- gsets_msig %&gt;% pull(gs_name)
+gsets_vectors
+str(gsets_vectors)</code></pre>
 </div>
 <div id="prepare-expression-data" class="section level2">
 <h2>Prepare expression data</h2>
 <pre class="r"><code>expr_matrix &lt;- exprs(tcl_eset)
 expr_matrix[1:5, 1:5]</code></pre>
 <p>Convert affymetrix probe IDs to gene symbols</p>
-<pre class="r"><code># note - takes up to 30+ minutes
-mart &lt;- useMart(&quot;ENSEMBL_MART_ENSEMBL&quot;)
+<pre class="r"><code>mart &lt;- useMart(&quot;ENSEMBL_MART_ENSEMBL&quot;)
 mart &lt;- useDataset(&quot;hsapiens_gene_ensembl&quot;, mart)
 annotLookup &lt;- getBM(
   mart = mart,
@@ -700,18 +644,11 @@ annotLookup &lt;- getBM(
     &quot;external_gene_name&quot;),
   filter = &quot;affy_hg_u133_plus_2&quot;,
   values = rownames(exprs(tcl_eset)),
-  uniqueRows = TRUE)
-
-# save for later use
-saveRDS(annotLookup, &quot;output/annotLookup.rds&quot;)</code></pre>
-<div id="filtering" class="section level3">
-<h3>Filtering</h3>
+  uniqueRows = TRUE)</code></pre>
+<p>##Filtering</p>
 <div id="valid-gene-names" class="section level4">
 <h4>Valid gene names</h4>
-<pre class="r"><code># get lookup table
-annotLookup &lt;- readRDS(&quot;output/annotLookup.rds&quot;)
-
-# apply new rownames
+<pre class="r"><code># apply new rownames
 # keep only one entry per probe name
 new_rnames &lt;- rownames(expr_matrix) %&gt;%
   enframe() %&gt;%
@@ -750,9 +687,7 @@ expr_matrix_prtcode &lt;- expr_matrix_collapsed %&gt;%
   left_join(annotLookup) %&gt;%
   distinct(external_gene_name, .keep_all = TRUE) %&gt;%
   dplyr::filter(gene_biotype == &quot;protein_coding&quot;) %&gt;%
-  dplyr::select(-affy_hg_u133_plus_2, 
-                -ensembl_gene_id, 
-                -gene_biotype) %&gt;%
+  dplyr::select(-affy_hg_u133_plus_2, -ensembl_gene_id, -gene_biotype) %&gt;%
   as.data.frame() %&gt;%
   column_to_rownames(var = &quot;external_gene_name&quot;) %&gt;%
   as.matrix()
@@ -767,21 +702,20 @@ median(expr_matrix_prtcode)
 mean(expr_matrix_prtcode)
 
 # filter out genes that aren&#39;t at least expressed greater than 1 in at least half of all cases
-# total cases = 271
 total_stats &lt;- data.frame(
   total = apply(expr_matrix_prtcode, 1, 
                 function(x) sum(x &gt; 1, 
                                 na.rm = TRUE)))
-keep &lt;- which(total_stats$total &gt; 135) 
+keep &lt;- which(total_stats$total &gt;= 135) 
 
 dim(expr_matrix_prtcode)
 expr_matrix_filtered &lt;- expr_matrix_prtcode[keep,]
 dim(expr_matrix_filtered)</code></pre>
 </div>
-</div>
-<div id="density-plot" class="section level3">
-<h3>Density Plot</h3>
-<pre class="r"><code># tidy data
+<div id="density-plot" class="section level4">
+<h4>Density Plot</h4>
+<pre class="r"><code># Density plots
+# tidy data
 tidy_expr &lt;- expr_matrix_filtered %&gt;%
   as.data.frame() %&gt;%
   rownames_to_column(var = &quot;gene_name&quot;) %&gt;%
@@ -795,8 +729,9 @@ dplot_expr &lt;- ggplot(tidy_expr, aes(intensity)) +
   theme(legend.position = &quot;none&quot;)
 dplot_expr</code></pre>
 </div>
-<div id="normalize-gene-expression-distributions" class="section level3">
-<h3>Normalize gene expression distributions</h3>
+</div>
+<div id="normalize-gene-expression-distributions" class="section level2">
+<h2>Normalize gene expression distributions</h2>
 <p>Normalisation by the method of trimmed mean of M-values (TMM) is performed using the calcNormFactors function in edgeR. The normalisation factors calculated here are used as a scaling factor for the library sizes.</p>
 <pre class="r"><code># get normalization factors
 norm_factors &lt;- calcNormFactors(expr_matrix_filtered, method = &quot;TMM&quot;)
@@ -808,57 +743,116 @@ expr_matrix_norm &lt;- map2_dfc(as.data.frame(expr_matrix_filtered),
 rownames(expr_matrix_norm) &lt;- rownames(expr_matrix_filtered)
 expr_matrix_norm[1:5, 1:5]</code></pre>
 </div>
-</div>
-<div id="define-groups" class="section level2">
-<h2>Define Groups</h2>
-<pre class="r"><code># Get phenotype data from expressionset
-pheno_data &lt;- pData(tcl_eset)
-str(pheno_data)
+<div id="gsva" class="section level2">
+<h2>GSVA</h2>
+<p>Write out matrix and gene set lists</p>
+<pre class="r"><code># gset list
+saveRDS(gsets_vectors, &quot;output/gsets_4.rds&quot;)
 
-# create table with groups and potential batch effects as factors
-pheno_tbl &lt;- pheno_data %&gt;%
+expr_matrix &lt;- expr_matrix_norm %&gt;% 
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;gene&quot;)
+
+write_csv(expr_matrix, &quot;output/expr_matrix.csv&quot;)</code></pre>
+<p>GSVA</p>
+<pre class="r"><code>tcl_es &lt;- gsva(expr_matrix_norm, gsets_vectors,
+                annotation = NULL,
+                method = &quot;gsva&quot;,
+                mx.diff = TRUE,
+                verbose = TRUE)</code></pre>
+<p>GSVA results</p>
+<pre class="r"><code># pull out group membership
+group_lookup &lt;- pheno_data %&gt;%
   rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
   as_tibble() %&gt;%
-  mutate(group = as.factor(collapsed_group),
-         dataset = as.factor(dataset)) %&gt;%
+  dplyr::select(sample_id, collapsed_group) %&gt;%
   print()
 
-# Review group and potential batch effects
-summary(pheno_tbl$group)
-summary(pheno_tbl$dataset)</code></pre>
-</div>
-<div id="design-and-constrast-matrices" class="section level2">
-<h2>Design and constrast matrices</h2>
-<pre class="r"><code>rnames &lt;- pheno_tbl$sample_id
-groups &lt;- as.factor(pheno_tbl$group)
-dataset &lt;- as.factor(pheno_tbl$dataset)
-design &lt;- model.matrix(~ 0 + groups + dataset)
-colnames(design) &lt;- gsub(&quot;groups&quot;, &quot;&quot;, colnames(design))
-rownames(design) &lt;- rnames
-head(design)
-
-contr.matrix &lt;- makeContrasts(PTCL - control, levels = design)
-head(contr.matrix)</code></pre>
-</div>
-<div id="limma" class="section level2">
-<h2>Limma</h2>
-<p>Fit linear models with limma</p>
-<pre class="r"><code># fit linear models
-fit &lt;- lmFit(expr_matrix_norm, design)
-fit2 &lt;- contrasts.fit(fit, contr.matrix)
-fit2 &lt;- eBayes(fit2)
-
-summary(decideTests(fit2))
-
-toptable_ptclvscontrol &lt;- topTable(fit2, coef = 1, number = &#39;inf&#39;, sort.by = &quot;P&quot;) %&gt;%
+# add group membership to gsva score matrix
+tcl_gsva_tidy &lt;- tcl_es %&gt;%
+  t() %&gt;%
   as.data.frame() %&gt;%
-  rownames_to_column(var = &quot;gene_symbol&quot;) %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
   as_tibble() %&gt;%
+  left_join(group_lookup, by = &quot;sample_id&quot;) %&gt;%
+  dplyr::select(sample_id, disease = collapsed_group, everything()) %&gt;%
+  # filter for relevant groups
+  dplyr::filter(disease %in% c(&quot;AILD&quot;, &quot;ALCL&quot;, &quot;control&quot;, &quot;PTCL&quot;)) %&gt;%
+  mutate(disease = as.factor(disease)) %&gt;%
+  gather(key = gene_set, value = gsva_score, -sample_id, -disease) %&gt;%
+  mutate(gene_set = as.factor(gene_set),
+         gene_set = fct_recode(gene_set,
+                               &quot;Bakker FOXO3 targets&quot; = &quot;BAKKER_FOXO3_TARGETS_UP&quot;,
+                               &quot;Delpuech FOXO3 targets&quot; = &quot;DELPUECH_FOXO3_TARGETS_UP&quot;,
+                               &quot;Predicted FOXO3 targets&quot; = &quot;FOXO3_01&quot;,
+                               &quot;Genes expressed in wt \nbut not FOXO1_FOXO3 KO&quot; = &quot;GSE21678_WT_VS_FOXO1_FOXO3_KO_TREG_UP&quot;)) %&gt;%
+  group_by(gene_set) %&gt;%
+  print()
+  
+# plot gsva scores in boxplots
+plot1 &lt;- ggplot(data = tcl_gsva_tidy, aes(x = gene_set, y = gsva_score, fill = disease)) +
+  geom_boxplot() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
+  geom_hline(yintercept = 0, linetype = 3) +
+  scale_fill_nejm(alpha = 0.7) +
+  ggtitle(&quot;Gene Set Expression by Individual Samples per Disease Group&quot;) +
+  xlab(&quot;Gene Set&quot;) +
+  ylab(&quot;GSVA Score&quot;) +
+  labs(fill = &quot;Disease&quot;)
+
+plot1</code></pre>
+<p>Test results for significance</p>
+<pre class="r"><code>tcl_gsva_tidy
+
+# compute one-way anova test for each gene set to see if there is any significant difference among means
+compare_means(gsva_score ~ disease, 
+              data = tcl_gsva_tidy,
+              method = &quot;anova&quot;, 
+              group.by = &quot;gene_set&quot;)
+
+# find out which pairwise comparisons are significant
+# adjust for multiple hypothesis testing!
+tcl_gsva_bakker &lt;- tcl_gsva_tidy %&gt;%
+  dplyr::filter(gene_set == &quot;Bakker FOXO3 targets&quot;)
+mod_bakker &lt;- aov(gsva_score ~ disease, data = tcl_gsva_bakker) 
+summary(mod_bakker)
+bakker &lt;- tidy(TukeyHSD(mod_bakker)) %&gt;% 
+  bind_cols(gene_set = rep(&quot;Bakker&quot;, 6)) %&gt;%
+  dplyr::select(gene_set, comparison, adj.p.value, everything()) %&gt;%
   print()
 
-akt_expression &lt;- toptable_ptclvscontrol %&gt;% 
-  dplyr::filter(gene_symbol == &quot;AKT1&quot;) %&gt;%
-  print()</code></pre>
+tcl_gsva_delpuech &lt;- tcl_gsva_tidy %&gt;%
+  dplyr::filter(gene_set == &quot;Delpuech FOXO3 targets&quot;)
+mod_delpuech &lt;- aov(gsva_score ~ disease, data = tcl_gsva_delpuech) 
+summary(mod_delpuech)
+delpuech &lt;- tidy(TukeyHSD(mod_delpuech)) %&gt;% 
+  bind_cols(gene_set = rep(&quot;Delpuech&quot;, 6)) %&gt;%
+  dplyr::select(gene_set, comparison, adj.p.value, everything()) %&gt;%
+  print()
+
+tcl_gsva_predicted &lt;- tcl_gsva_tidy %&gt;%
+  dplyr::filter(gene_set == &quot;Predicted FOXO3 targets&quot;)
+mod_predicted &lt;- aov(gsva_score ~ disease, data = tcl_gsva_predicted) 
+summary(mod_predicted)
+predicted &lt;- tidy(TukeyHSD(mod_predicted)) %&gt;% 
+  bind_cols(gene_set = rep(&quot;predicted&quot;, 6)) %&gt;%
+  dplyr::select(gene_set, comparison, adj.p.value, everything()) %&gt;%
+  print()
+
+tcl_gsva_ko &lt;- tcl_gsva_tidy %&gt;%
+  dplyr::filter(gene_set == &quot;Genes expressed in wt \nbut not FOXO1_FOXO3 KO&quot;)
+mod_ko &lt;- aov(gsva_score ~ disease, data = tcl_gsva_ko) 
+summary(mod_ko)
+KO &lt;- tidy(TukeyHSD(mod_ko)) %&gt;% 
+  bind_cols(gene_set = rep(&quot;KO&quot;, 6)) %&gt;%
+  dplyr::select(gene_set, comparison, adj.p.value, everything()) %&gt;%
+  print()
+
+pairwise_comparisons &lt;- bakker %&gt;%
+  bind_rows(delpuech, predicted, KO) %&gt;%
+  arrange(comparison) %&gt;%
+  print(n = 24)</code></pre>
 <br>
 <p>
 <button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
