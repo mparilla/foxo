@@ -1,0 +1,323 @@
+---
+title: "gsva"
+author: "mleukam"
+date: "2019-09-20"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Setup
+
+clear the workspace
+```{r}
+rm(list = ls())
+```
+
+Set default to not run chunks when knitting
+(long operations in notebook make updating html output time prohibitive)
+```{r}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Read in packages
+```{r}
+library(tidyverse)
+library(edgeR)
+library(limma)
+library(msigdbr)
+library(GSA)
+library(biomaRt)
+library(Biobase)
+library(GSVA)
+library(ggsci)
+library(ggpubr)
+library(ggbeeswarm)
+library(broom)
+```
+
+Load data
+```{r}
+tcl_eset <- readRDS("output/tcl_eset.rds")
+```
+
+## Prepare gene sets
+
+http://software.broadinstitute.org/gsea/msigdb/search.jsp
+
+```{r}
+gsetnames <- c("BAKKER_FOXO3_TARGETS_UP", "DELPUECH_FOXO3_TARGETS_UP", "GSE21678_WT_VS_FOXO1_FOXO3_KO_TREG_UP", "FOXO3_01")
+
+# use msigdbr to retreive human gene sets from MSigDB
+m_df = msigdbr(species = "Homo sapiens")
+
+# review subcategories
+summary(as.factor(m_df$gs_subcat))
+
+# select gene sets from msigdbr-retreived gene list with vector of gene set names
+my_gsets <- m_df %>%
+  dplyr::filter(gs_name %in% gsetnames)
+summary(as.factor(my_gsets$gs_name))
+
+# make a list of gene symbol vectors for each gene set
+gsets_msig <- my_gsets %>%
+  dplyr::select(gs_name, human_gene_symbol) %>%
+  nest(key = "human_gene_symbol") %>%
+  print()
+gsets_msig_list <- map(gsets_msig, as.list)
+gsets_vectors <- gsets_msig_list$data %>%
+  map(pull)
+names(gsets_vectors) <- gsets_msig %>% pull(gs_name)
+gsets_vectors
+str(gsets_vectors)
+```
+
+## Prepare expression data
+```{r}
+expr_matrix <- exprs(tcl_eset)
+expr_matrix[1:5, 1:5]
+```
+
+Convert affymetrix probe IDs to gene symbols
+```{r}
+mart <- useMart("ENSEMBL_MART_ENSEMBL")
+mart <- useDataset("hsapiens_gene_ensembl", mart)
+annotLookup <- getBM(
+  mart = mart,
+  attributes = c(
+    "affy_hg_u133_plus_2",
+    "ensembl_gene_id",
+    "gene_biotype",
+    "external_gene_name"),
+  filter = "affy_hg_u133_plus_2",
+  values = rownames(exprs(tcl_eset)),
+  uniqueRows = TRUE)
+```
+
+##Filtering 
+
+#### Valid gene names
+```{r}
+# apply new rownames
+# keep only one entry per probe name
+new_rnames <- rownames(expr_matrix) %>%
+  enframe() %>%
+  dplyr::select(affy_hg_u133_plus_2 = value) %>%
+  left_join(annotLookup) %>%
+  distinct(affy_hg_u133_plus_2, .keep_all = TRUE) %>%
+  pull(external_gene_name) 
+gnames_expr_matrix <- expr_matrix
+rownames(gnames_expr_matrix) <- new_rnames
+
+# remove "NA" gene names
+dim(gnames_expr_matrix)
+gnames_expr_matrix_nona <- gnames_expr_matrix %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "gene_name") %>%
+  filter(gene_name != is.na(gene_name)) %>%
+  column_to_rownames(var = "gene_name") %>%
+  as.matrix()
+gnames_expr_matrix_nona[1:5, 1:5]
+dim(gnames_expr_matrix_nona)
+
+# collapse identical gene names by averaging
+dim(gnames_expr_matrix_nona)
+expr_matrix_collapsed <- avereps(gnames_expr_matrix_nona)
+dim(expr_matrix_collapsed)
+```
+
+#### Protein Coding
+```{r}
+summary(as.factor(annotLookup$gene_biotype))
+
+dim(expr_matrix_collapsed)
+expr_matrix_prtcode <- expr_matrix_collapsed %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "external_gene_name") %>%
+  as_tibble() %>%
+  left_join(annotLookup) %>%
+  distinct(external_gene_name, .keep_all = TRUE) %>%
+  dplyr::filter(gene_biotype == "protein_coding") %>%
+  dplyr::select(-affy_hg_u133_plus_2, -ensembl_gene_id, -gene_biotype) %>%
+  as.data.frame() %>%
+  column_to_rownames(var = "external_gene_name") %>%
+  as.matrix()
+dim(expr_matrix_prtcode)
+```
+
+#### Expression level
+```{r}
+pheno_data <- pData(tcl_eset)
+summary(as.factor(pheno_data$collapsed_group))
+
+median(expr_matrix_prtcode)
+mean(expr_matrix_prtcode)
+
+# filter out genes that aren't at least expressed greater than 1 in at least half of all cases
+total_stats <- data.frame(
+  total = apply(expr_matrix_prtcode, 1, 
+                function(x) sum(x > 1, 
+                                na.rm = TRUE)))
+keep <- which(total_stats$total >= 135) 
+
+dim(expr_matrix_prtcode)
+expr_matrix_filtered <- expr_matrix_prtcode[keep,]
+dim(expr_matrix_filtered)
+```
+
+#### Density Plot
+```{r}
+# Density plots
+# tidy data
+tidy_expr <- expr_matrix_filtered %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "gene_name") %>%
+  as_tibble() %>%
+  gather(key = "sampleID", value = "intensity", -gene_name) %>%
+  print()
+
+# plot
+dplot_expr <- ggplot(tidy_expr, aes(intensity)) +
+  geom_density() + 
+  theme(legend.position = "none")
+dplot_expr
+```
+
+## Normalize gene expression distributions
+
+Normalisation by the method of trimmed mean of M-values (TMM) is performed using the calcNormFactors function in edgeR. The normalisation factors calculated here are used as a scaling factor for the library sizes. 
+
+```{r}
+# get normalization factors
+norm_factors <- calcNormFactors(expr_matrix_filtered, method = "TMM")
+
+# apply factor to each column
+expr_matrix_norm <- map2_dfc(as.data.frame(expr_matrix_filtered),
+                             norm_factors, `*`) %>%
+  as.matrix()
+rownames(expr_matrix_norm) <- rownames(expr_matrix_filtered)
+expr_matrix_norm[1:5, 1:5]
+```
+
+## GSVA
+Write out matrix and gene set lists
+```{r}
+# gset list
+saveRDS(gsets_vectors, "output/gsets_4.rds")
+
+expr_matrix <- expr_matrix_norm %>% 
+  as.data.frame() %>%
+  rownames_to_column(var = "gene")
+
+write_csv(expr_matrix, "output/expr_matrix.csv")
+```
+
+GSVA
+```{r}
+tcl_es <- gsva(expr_matrix_norm, gsets_vectors,
+                annotation = NULL,
+                method = "gsva",
+                mx.diff = TRUE,
+                verbose = TRUE)
+
+```
+
+GSVA results
+```{r}
+# pull out group membership
+group_lookup <- pheno_data %>%
+  rownames_to_column(var = "sample_id") %>%
+  as_tibble() %>%
+  dplyr::select(sample_id, collapsed_group) %>%
+  print()
+
+# add group membership to gsva score matrix
+tcl_gsva_tidy <- tcl_es %>%
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "sample_id") %>%
+  as_tibble() %>%
+  left_join(group_lookup, by = "sample_id") %>%
+  dplyr::select(sample_id, disease = collapsed_group, everything()) %>%
+  # filter for relevant groups
+  dplyr::filter(disease %in% c("AILD", "ALCL", "control", "PTCL")) %>%
+  mutate(disease = as.factor(disease)) %>%
+  gather(key = gene_set, value = gsva_score, -sample_id, -disease) %>%
+  mutate(gene_set = as.factor(gene_set),
+         gene_set = fct_recode(gene_set,
+                               "Bakker FOXO3 targets" = "BAKKER_FOXO3_TARGETS_UP",
+                               "Delpuech FOXO3 targets" = "DELPUECH_FOXO3_TARGETS_UP",
+                               "Predicted FOXO3 targets" = "FOXO3_01",
+                               "Genes expressed in wt \nbut not FOXO1_FOXO3 KO" = "GSE21678_WT_VS_FOXO1_FOXO3_KO_TREG_UP")) %>%
+  group_by(gene_set) %>%
+  print()
+  
+# plot gsva scores in boxplots
+plot1 <- ggplot(data = tcl_gsva_tidy, aes(x = gene_set, y = gsva_score, fill = disease)) +
+  geom_boxplot() +
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
+  geom_hline(yintercept = 0, linetype = 3) +
+  scale_fill_nejm(alpha = 0.7) +
+  ggtitle("Gene Set Expression by Individual Samples per Disease Group") +
+  xlab("Gene Set") +
+  ylab("GSVA Score") +
+  labs(fill = "Disease")
+
+plot1
+```
+
+Test results for significance
+```{r}
+tcl_gsva_tidy
+
+# compute one-way anova test for each gene set to see if there is any significant difference among means
+compare_means(gsva_score ~ disease, 
+              data = tcl_gsva_tidy,
+              method = "anova", 
+              group.by = "gene_set")
+
+# find out which pairwise comparisons are significant
+# adjust for multiple hypothesis testing!
+tcl_gsva_bakker <- tcl_gsva_tidy %>%
+  dplyr::filter(gene_set == "Bakker FOXO3 targets")
+mod_bakker <- aov(gsva_score ~ disease, data = tcl_gsva_bakker) 
+summary(mod_bakker)
+bakker <- tidy(TukeyHSD(mod_bakker)) %>% 
+  bind_cols(gene_set = rep("Bakker", 6)) %>%
+  dplyr::select(gene_set, comparison, adj.p.value, everything()) %>%
+  print()
+
+tcl_gsva_delpuech <- tcl_gsva_tidy %>%
+  dplyr::filter(gene_set == "Delpuech FOXO3 targets")
+mod_delpuech <- aov(gsva_score ~ disease, data = tcl_gsva_delpuech) 
+summary(mod_delpuech)
+delpuech <- tidy(TukeyHSD(mod_delpuech)) %>% 
+  bind_cols(gene_set = rep("Delpuech", 6)) %>%
+  dplyr::select(gene_set, comparison, adj.p.value, everything()) %>%
+  print()
+
+tcl_gsva_predicted <- tcl_gsva_tidy %>%
+  dplyr::filter(gene_set == "Predicted FOXO3 targets")
+mod_predicted <- aov(gsva_score ~ disease, data = tcl_gsva_predicted) 
+summary(mod_predicted)
+predicted <- tidy(TukeyHSD(mod_predicted)) %>% 
+  bind_cols(gene_set = rep("predicted", 6)) %>%
+  dplyr::select(gene_set, comparison, adj.p.value, everything()) %>%
+  print()
+
+tcl_gsva_ko <- tcl_gsva_tidy %>%
+  dplyr::filter(gene_set == "Genes expressed in wt \nbut not FOXO1_FOXO3 KO")
+mod_ko <- aov(gsva_score ~ disease, data = tcl_gsva_ko) 
+summary(mod_ko)
+KO <- tidy(TukeyHSD(mod_ko)) %>% 
+  bind_cols(gene_set = rep("KO", 6)) %>%
+  dplyr::select(gene_set, comparison, adj.p.value, everything()) %>%
+  print()
+
+pairwise_comparisons <- bakker %>%
+  bind_rows(delpuech, predicted, KO) %>%
+  arrange(comparison) %>%
+  print(n = 24)
+```
+

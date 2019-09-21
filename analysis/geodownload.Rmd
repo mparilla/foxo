@@ -143,8 +143,8 @@ p14879_fixed <- p14879 %>%
   mutate(rnames = geo_accession) %>%
   dplyr::rename(group = title) %>%
   as.data.frame() %>%
-  column_to_rownames(var = "rnames")
-p14879_fixed[1:5,1:5]
+  column_to_rownames(var = "rnames") 
+p14879_fixed[1:5, ]
 ```
 
 Fix column names for expression data
@@ -217,12 +217,12 @@ identical(rownames(exp19069_fixed), rownames(exp14879_fixed))
 exp6338_df <- exp6338_fixed %>%
   as.data.frame() %>%
   rownames_to_column(var = "probe_id") %>%
-  as_tibble()
+  as_tibble() 
 
 exp14879_df <- exp14879_fixed %>%
   as.data.frame() %>%
   rownames_to_column(var = "probe_id") %>%
-  as_tibble()
+  as_tibble() 
 
 exp19069_df <- exp19069_fixed %>%
   as.data.frame() %>%
@@ -255,18 +255,24 @@ p19069
 p14879_df <- p14879_fixed %>%
   rownames_to_column(var = "sample_id") %>%
   as_tibble() %>%
+  mutate(dataset = rep("GSE14879", nrow(p14879))) %>%
+  dplyr::select(sample_id, group, geo_accession, dataset, everything()) %>%
   print()
 
 p6338_df <- p6338 %>%
   rownames_to_column(var = "sample_id") %>%
   as_tibble() %>%
   dplyr::rename(group = title) %>%
+  mutate(dataset = rep("GSE6338", nrow(p6338))) %>%
+  dplyr::select(sample_id, group, geo_accession, dataset, everything()) %>%
   print()
 
 p19069_df <- p19069 %>%
   rownames_to_column(var = "sample_id") %>%
   as_tibble() %>%
   dplyr::rename(group = title) %>%
+  mutate(dataset = rep("GSE19069", nrow(p19069))) %>%
+  dplyr::select(sample_id, group, geo_accession, dataset, everything()) %>%
   print()
 
 match_table <- colnames(combined_exprs) %>%
@@ -290,7 +296,12 @@ combined_pdata_groups <- combined_pdata %>%
          group = as.character(group)) %>%
   mutate(groups1 = coalesce(group.x, group.y)) %>%
   mutate(groups = coalesce(group, groups1)) %>%
-  dplyr::select(sample_id, groups, everything()) %>%
+  mutate(dataset.x = as.character(dataset.x),
+         dataset.y = as.character(dataset.y),
+         dataset = as.character(dataset)) %>%
+  mutate(dataset1 = coalesce(dataset.x, dataset.y)) %>%
+  mutate(dataset = coalesce(dataset, dataset1)) %>%
+  dplyr::select(sample_id, groups, dataset, everything()) %>%
   print()
 
 write_csv(combined_pdata_groups, "output/combined_pdata_prelim_groups.csv")
@@ -302,6 +313,7 @@ combined_pdata_fixed <- read_csv("output/combined_pdata_fixed_groups.csv")
 
 combined_pdata_fixed
 summary(as.factor(combined_pdata_fixed$collapsed_group))
+summary(as.factor(combined_pdata_fixed$dataset))
 
 pheno_data <- combined_pdata_fixed %>%
   as.data.frame() %>%
