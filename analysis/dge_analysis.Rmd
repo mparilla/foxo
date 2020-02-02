@@ -17,6 +17,7 @@ rm(list = ls())
 ```{r}
 library(tidyverse)
 library(limma)
+library(edgeR)
 library(Biobase)
 library(biomaRt)
 
@@ -169,7 +170,9 @@ rownames(expr_matrix_norm) <- rownames(expr_matrix_filtered)
 expr_matrix_norm[1:5, 1:5]
 ```
 
-## Define Groups
+# PTCL vs control
+
+#### Define Groups
 
 ```{r}
 # Get phenotype data from expressionset
@@ -189,7 +192,7 @@ summary(pheno_tbl$group)
 summary(pheno_tbl$dataset)
 ```
 
-## Design and constrast matrices
+#### Design and constrast matrices
 ```{r}
 rnames <- pheno_tbl$sample_id
 groups <- as.factor(pheno_tbl$group)
@@ -203,7 +206,7 @@ contr.matrix <- makeContrasts(PTCL - control, levels = design)
 head(contr.matrix)
 ```
 
-## Limma
+#### Limma
 
 Fit linear models with limma
 ```{r}
@@ -220,7 +223,164 @@ toptable_ptclvscontrol <- topTable(fit2, coef = 1, number = 'inf', sort.by = "P"
   as_tibble() %>%
   print()
 
+# candidate genes
 akt_expression <- toptable_ptclvscontrol %>% 
   dplyr::filter(gene_symbol == "AKT1") %>%
   print()
+
+bcl6_expression <- toptable_ptclvscontrol %>% 
+  dplyr::filter(gene_symbol == "BCL6") %>%
+  print()
+
+sod2_expression <- toptable_ptclvscontrol %>% 
+  dplyr::filter(gene_symbol == "SOD2") %>%
+  print()
+
+hif1a_expression <- toptable_ptclvscontrol %>% 
+  dplyr::filter(gene_symbol == "HIF1A") %>%
+  print()
+
+write_csv(toptable_ptclvscontrol, "output/toptable_ptcl.vs.control.csv")
+```
+
+# FOXO Active vs Non-active
+
+#### Define Groups
+
+```{r}
+# normalized and filtered gene expression matrix
+expr_matrix_norm[1:5, 1:5]
+
+# phenotype data
+tcl_eset <- readRDS("output/tcl_eset.rds")
+pheno_data <- pData(tcl_eset) %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "sample_id") %>%
+  as_tibble() %>% 
+  print()
+
+# GSVA score results
+tcl_es <- readRDS("output/tcl_es.rds") %>%
+  as.matrix() %>%
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "sample_id") %>%
+  as_tibble() %>%
+  print()
+
+# merge GSVA scores into pheno data
+pheno_data_gsva <- pheno_data %>%
+  left_join(tcl_es) %>%
+  dplyr::select(sample_id, bakker = starts_with("BAKKER"), delpuech = starts_with("DELPUECH"), pred_foxo3 = starts_with("FOXO3_01"), foxo1_foxo3_upreg = starts_with("GSE21678_"), everything()) 
+
+# check collpased groups 
+pheno_data_gsva %>% 
+  group_by(collapsed_group) %>%
+  summarize(n = n())
+
+# filter for only PTCL cases
+pdata_ptcl <- pheno_data_gsva %>%
+  dplyr::filter(collapsed_group == "PTCL") %>%
+  print()
+
+# how many are consensus positive calls from experimental gene sets (excluding large "predicted" gene targets)? 
+# 30
+pdata_ptcl_grp <- pdata_ptcl %>%
+  mutate(foxo_consensus = ifelse(bakker < 0, "not_active",
+                                  ifelse(delpuech < 0, "not_active",
+                                         ifelse(foxo1_foxo3_upreg < 0, "not_active", "active"))))
+
+pdata_ptcl_grp %>% group_by(foxo_consensus) %>% summarize(n = n())
+
+pdata_select <- pdata_ptcl_grp %>%
+  dplyr::select(sample_id, 
+                foxo_consensus,
+                bakker, 
+                delpuech, 
+                foxo1_foxo3_upreg, 
+                pred_foxo3, 
+                dataset) %>%
+  mutate(foxo_active = ifelse(foxo_consensus == "active", 1, 0),
+         foxo_active = as.numeric(foxo_active)) %>%
+  mutate(is_gse6338 = ifelse(dataset == "GSE6338", 1, 0),
+         is_gse6338 = as.numeric(is_gse6338)) %>%
+  dplyr::select(sample_id, foxo_active, is_gse6338, bakker, delpuech, foxo1_foxo3_upreg, pred_foxo3) %>%
+  print()
+
+# check if foxo cases are evenly represented in the datasets
+table(pdata_select$foxo_active, pdata_select$is_gse6338)
+# not evenly represented - gse6338 has only 3 foxo active cases
+# previous PCA analysis showed significant differences between datasets is dominant source of variance
+# filter out gse6338 cases
+
+pdata_clean <- pdata_select %>%
+  dplyr::filter(is_gse6338 == 0) %>%
+  print()
+
+is.na(pdata_clean)
+
+pdata <- pdata_clean %>%
+  as.data.frame() %>%
+  column_to_rownames(var = "sample_id")
+
+pdata[1:5, 1:5]
+
+# filter the expression data to match the samples in our pdata
+dim(expr_matrix_norm)
+expr_matrix_filt <- expr_matrix_norm[, which(colnames(expr_matrix_norm) %in% rownames(pdata))]
+dim(expr_matrix_filt)
+
+# check that sample names match exactly between pdata and expression data 
+all(colnames(expr_matrix_filt) == rownames(pdata))
+```
+
+#### Design and constrast matrices
+```{r}
+rnames <- rownames(pdata)
+groups <- as.factor(pdata$foxo_active)
+design <- model.matrix(~ 0 + groups)
+rownames(design) <- rnames
+head(design)
+colnames(design) <- c("not_active", "foxo_active")
+head(design)
+
+contr.matrix <- makeContrasts(foxo_active - not_active, levels = design)
+head(contr.matrix)
+```
+
+#### Limma
+
+Fit linear models with limma
+```{r}
+# fit linear models
+fit <- lmFit(expr_matrix_filt, design)
+fit2 <- contrasts.fit(fit, contr.matrix)
+fit2 <- eBayes(fit2)
+
+summary(decideTests(fit2))
+
+toptable_foxoactivevsnon <- topTable(fit2, coef = 1, number = 'inf', sort.by = "P") %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "gene_symbol") %>%
+  as_tibble() %>%
+  print()
+
+# candidate genes
+akt_expression <- toptable_foxoactivevsnon %>% 
+  dplyr::filter(gene_symbol == "AKT1") %>%
+  print()
+
+bcl6_expression <- toptable_foxoactivevsnon %>% 
+  dplyr::filter(gene_symbol == "BCL6") %>%
+  print()
+
+sod2_expression <- toptable_foxoactivevsnon %>% 
+  dplyr::filter(gene_symbol == "SOD2") %>%
+  print()
+
+hif1a_expression <- toptable_foxoactivevsnon %>% 
+  dplyr::filter(gene_symbol == "HIF1A") %>%
+  print()
+
+write_csv(toptable_foxoactivevsnon, "output/toptable_foxoactivevsnon.csv")
 ```

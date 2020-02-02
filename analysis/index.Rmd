@@ -8,7 +8,7 @@ editor_options:
   chunk_output_type: console
 ---
 
-Welcome to the computational lab notebook for a project examining the role of FoxO3 in T-cell lymphoma.
+Welcome to the computational lab notebook for a project examining the role of FOXO3 in T-cell lymphoma.
 
 ## Data Sources
 
@@ -16,16 +16,20 @@ Downloaded raw data from GEO. In this notebook, the raw data is normalized, and 
 
 * [Data download](geodownload.html)
 
-## GSVA
+FOXO3 gene sets were obtained from 4 sources. One gene set comprises the top upregulated genes from a human erythroblast cell line treated with 50 nM 4-hydroxytamoxifen to stimulate FOXO3 activation (Bakker et al). Another comprises the top upregulated genes in a human colon cancer cell line treated with overexpression plasmids with FOXO3 compared to control (Delpeuch et al). A third is the top upregulated genes in wild type mice compared to FOXO1/FOXO3 double knock-out mice (wt_vs_FOXO1_FOXO3_DKO). Finally, a predicted FOXO3 target list based on comptational motif analysis was considered. 
 
-Next we will look at differential expression of FOXO3 targets in individual samples by disease group using GSVA. In this notebook, the expression data is filtered for protein coding genes only, and the probes are collapsed to gene level. Four gene sets containing different FOXO targets are used to investigate patterns of expression among different disease groups.
+## PTCL versus control
+
+We will examine the relative expression of FOXO3 targets in individual samples by disease group using GSVA. In the GSVA notebook, the expression data is filtered for protein coding genes only, and the probes are collapsed to gene level. Four gene sets containing different FOXO targets are used to investigate patterns of expression among different disease groups. The makeup of the gene sets was investigated by pathway enrichment. The differential gene expression was analyzed in PTCL versus control. These analysis make up figure 1 in the manuscript draft. 
 
 * [GSVA](dge_analysis.html)
+* [Which terms are enriched in the FOXO3 target gene sets?](pathway_enrichment.html)
+* [Differential gene expression - PTCL vs control](dge_analysis.html)
+* [Gene set enricment - PTCL vs control](fgsea.html)
 
-## Differential gene expression (limma)
+## FOXO3 active PTCL versus FOXO3 non-active PTCL
 
-We will also investigate the bulk differential gene expression between PTCL samples and control samples using a linear model with limma. The dataset source (3 datasets were combined) will be included as a batch effect variable in the model. Specific genes related to FOXO3 expression and function will be interrogated.
+Samples with a positive GSVA score in experimentally-derived FOXO3 target sets (indicating increased gene set expression compared to median gene expression) were termed "FOXO3 active" (positive score in all three of Delpeuch, Bakker, and wild-type vs FOXO1/FOXO3 DKO mouse). GSE19069 and GSE6338 datasets both contained FOXO3 active and inactive PTCL samples. PCA of gene expression showed significant batch effect between GSE19069 and GSE6338. GSE19069 has a larger number of FOXO3 active cases, and was used as the sole dataset for the analyses in this section. Coregulartory networks were assessed using ICA decomposition of the expression of the 1000 most variant genes. The differential gene expression 
 
-* [Differential gene expression analysis](dge_analysis.html)
-
-
+* [PCA and ICA](correlation.html)
+* [Differential gene expression - FOXO3 active vs FOXO3 non-active](foxo_ptcl_dge.html)
