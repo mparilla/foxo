@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
@@ -84,7 +83,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -233,6 +231,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -325,7 +324,7 @@ div.section {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2019-09-21
+<strong>Last updated:</strong> 2020-02-02
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 2 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
@@ -335,7 +334,7 @@ div.section {
 </p>
 <p>
 This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
-  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.4.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
 </p>
 <hr>
 </div>
@@ -356,10 +355,10 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree0614c4ed142f006d5fd0ddbe45a2f4f30653c248targetblank0614c4ea"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/mparilla/foxo/tree/0614c4ed142f006d5fd0ddbe45a2f4f30653c248" target="_blank">0614c4e</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree75ea1842548dec5d7fd65d5d15ec8025121f4e11targetblank75ea184a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/mparilla/foxo/tree/75ea1842548dec5d7fd65d5d15ec8025121f4e11" target="_blank">75ea184</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree0614c4ed142f006d5fd0ddbe45a2f4f30653c248targetblank0614c4ea" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree75ea1842548dec5d7fd65d5d15ec8025121f4e11targetblank75ea184a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -372,16 +371,25 @@ Ignored files:
     Ignored:    data/GSE14879/
     Ignored:    data/GSE19069/
     Ignored:    data/GSE6338/
+    Ignored:    output/.DS_Store
     Ignored:    output/combined_exprs.rds
     Ignored:    output/tcl_eset.rds
 
 Untracked files:
+    Untracked:  analysis/correlation.Rmd
+    Untracked:  analysis/fgsea.Rmd
+    Untracked:  analysis/foxo_ptcl_dge.Rmd
+    Untracked:  analysis/pathway_enrichment.Rmd
+    Untracked:  code/grn.R
+    Untracked:  es_10k/
     Untracked:  output/annotLookup.rds
+    Untracked:  output/differential_gene_expression_ptcl_vs_control.xlsx
     Untracked:  output/mart.rds
-
-Unstaged changes:
-    Modified:   output/combined_pdata_fixed_groups.csv
-    Modified:   output/combined_pdata_prelim_groups.csv
+    Untracked:  output/paper_figures/
+    Untracked:  output/tcl_es.rds
+    Untracked:  output/tcl_eset_foxo3_active.rds
+    Untracked:  output/toptable_foxoactivevsnon.csv
+    Untracked:  output/toptable_ptcl.vs.control.csv
 
 </code></pre>
 <p>
@@ -420,6 +428,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/mparilla/foxo/blob/75ea1842548dec5d7fd65d5d15ec8025121f4e11/analysis/index.Rmd" target="_blank">75ea184</a>
+</td>
+<td>
+mleukam
+</td>
+<td>
+2020-02-02
+</td>
+<td>
+wflow_git_commit(all = TRUE)
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/mparilla/foxo/042feba9558aa5b05dce92a1d859141e9155fd2d/docs/index.html" target="_blank">042feba</a>
+</td>
+<td>
+mleukam
+</td>
+<td>
+2019-09-21
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -563,26 +605,31 @@ Start workflowr project.
 </div>
 </div>
 </div>
-<p>Welcome to the computational lab notebook for a project examining the role of FoxO3 in T-cell lymphoma.</p>
+<p>Welcome to the computational lab notebook for a project examining the role of FOXO3 in T-cell lymphoma.</p>
 <div id="data-sources" class="section level2">
 <h2>Data Sources</h2>
 <p>Downloaded raw data from GEO. In this notebook, the raw data is normalized, and the phenotype data is cleaned and prepared. An expression-set object is created as the last step.</p>
 <ul>
 <li><a href="geodownload.html">Data download</a></li>
 </ul>
+<p>FOXO3 gene sets were obtained from 4 sources. One gene set comprises the top upregulated genes from a human erythroblast cell line treated with 50 nM 4-hydroxytamoxifen to stimulate FOXO3 activation (Bakker et al). Another comprises the top upregulated genes in a human colon cancer cell line treated with overexpression plasmids with FOXO3 compared to control (Delpeuch et al). A third is the top upregulated genes in wild type mice compared to FOXO1/FOXO3 double knock-out mice (wt_vs_FOXO1_FOXO3_DKO). Finally, a predicted FOXO3 target list based on comptational motif analysis was considered.</p>
 </div>
-<div id="gsva" class="section level2">
-<h2>GSVA</h2>
-<p>Next we will look at differential expression of FOXO3 targets in individual samples by disease group using GSVA. In this notebook, the expression data is filtered for protein coding genes only, and the probes are collapsed to gene level. Four gene sets containing different FOXO targets are used to investigate patterns of expression among different disease groups.</p>
+<div id="ptcl-versus-control" class="section level2">
+<h2>PTCL versus control</h2>
+<p>We will examine the relative expression of FOXO3 targets in individual samples by disease group using GSVA. In the GSVA notebook, the expression data is filtered for protein coding genes only, and the probes are collapsed to gene level. Four gene sets containing different FOXO targets are used to investigate patterns of expression among different disease groups. The makeup of the gene sets was investigated by pathway enrichment. The differential gene expression was analyzed in PTCL versus control. These analysis make up figure 1 in the manuscript draft.</p>
 <ul>
 <li><a href="dge_analysis.html">GSVA</a></li>
+<li><a href="pathway_enrichment.html">Which terms are enriched in the FOXO3 target gene sets?</a></li>
+<li><a href="dge_analysis.html">Differential gene expression - PTCL vs control</a></li>
+<li><a href="fgsea.html">Gene set enricment - PTCL vs control</a></li>
 </ul>
 </div>
-<div id="differential-gene-expression-limma" class="section level2">
-<h2>Differential gene expression (limma)</h2>
-<p>We will also investigate the bulk differential gene expression between PTCL samples and control samples using a linear model with limma. The dataset source (3 datasets were combined) will be included as a batch effect variable in the model. Specific genes related to FOXO3 expression and function will be interrogated.</p>
+<div id="foxo3-active-ptcl-versus-foxo3-non-active-ptcl" class="section level2">
+<h2>FOXO3 active PTCL versus FOXO3 non-active PTCL</h2>
+<p>Samples with a positive GSVA score in experimentally-derived FOXO3 target sets (indicating increased gene set expression compared to median gene expression) were termed “FOXO3 active” (positive score in all three of Delpeuch, Bakker, and wild-type vs FOXO1/FOXO3 DKO mouse). GSE19069 and GSE6338 datasets both contained FOXO3 active and inactive PTCL samples. PCA of gene expression showed significant batch effect between GSE19069 and GSE6338. GSE19069 has a larger number of FOXO3 active cases, and was used as the sole dataset for the analyses in this section. Coregulartory networks were assessed using ICA decomposition of the expression of the 1000 most variant genes. The differential gene expression</p>
 <ul>
-<li><a href="dge_analysis.html">Differential gene expression analysis</a></li>
+<li><a href="correlation.html">PCA and ICA</a></li>
+<li><a href="foxo_ptcl_dge.html">Differential gene expression - FOXO3 active vs FOXO3 non-active</a></li>
 </ul>
 </div>
 

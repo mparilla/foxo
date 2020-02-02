@@ -1,11 +1,10 @@
 <!DOCTYPE html>
 
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html>
 
 <head>
 
 <meta charset="utf-8" />
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
@@ -89,7 +88,6 @@ code {
 }
 img {
   max-width:100%;
-  height: auto;
 }
 .tabbed-pane {
   padding-top: 12px;
@@ -238,6 +236,7 @@ $(document).ready(function () {
   border: none;
   display: inline-block;
   border-radius: 4px;
+  background-color: transparent;
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li {
@@ -266,6 +265,12 @@ $(document).ready(function () {
 }
 }
 
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
 
 .toc-content {
   padding-left: 30px;
@@ -399,7 +404,7 @@ div.section {
 <div class="tab-content">
 <div id="summary" class="tab-pane fade in active">
 <p>
-<strong>Last updated:</strong> 2019-09-21
+<strong>Last updated:</strong> 2020-02-02
 </p>
 <p>
 <strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
@@ -409,7 +414,7 @@ div.section {
 </p>
 <p>
 This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
-  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.4.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
 </p>
 <hr>
 </div>
@@ -490,10 +495,10 @@ This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis
 <div class="panel panel-default">
 <div class="panel-heading">
 <p class="panel-title">
-<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree54ce0e77ac67fab6f6594627f578598d79c84231targetblank54ce0e7a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/mparilla/foxo/tree/54ce0e77ac67fab6f6594627f578598d79c84231" target="_blank">54ce0e7</a> </a>
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree75ea1842548dec5d7fd65d5d15ec8025121f4e11targetblank75ea184a"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/mparilla/foxo/tree/75ea1842548dec5d7fd65d5d15ec8025121f4e11" target="_blank">75ea184</a> </a>
 </p>
 </div>
-<div id="strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree54ce0e77ac67fab6f6594627f578598d79c84231targetblank54ce0e7a" class="panel-collapse collapse">
+<div id="strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree75ea1842548dec5d7fd65d5d15ec8025121f4e11targetblank75ea184a" class="panel-collapse collapse">
 <div class="panel-body">
 <p>
 Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
@@ -506,16 +511,25 @@ Ignored files:
     Ignored:    data/GSE14879/
     Ignored:    data/GSE19069/
     Ignored:    data/GSE6338/
+    Ignored:    output/.DS_Store
     Ignored:    output/combined_exprs.rds
     Ignored:    output/tcl_eset.rds
 
 Untracked files:
+    Untracked:  analysis/correlation.Rmd
+    Untracked:  analysis/fgsea.Rmd
+    Untracked:  analysis/foxo_ptcl_dge.Rmd
+    Untracked:  analysis/pathway_enrichment.Rmd
+    Untracked:  code/grn.R
+    Untracked:  es_10k/
     Untracked:  output/annotLookup.rds
+    Untracked:  output/differential_gene_expression_ptcl_vs_control.xlsx
     Untracked:  output/mart.rds
-
-Unstaged changes:
-    Modified:   output/combined_pdata_fixed_groups.csv
-    Modified:   output/combined_pdata_prelim_groups.csv
+    Untracked:  output/paper_figures/
+    Untracked:  output/tcl_es.rds
+    Untracked:  output/tcl_eset_foxo3_active.rds
+    Untracked:  output/toptable_foxoactivevsnon.csv
+    Untracked:  output/toptable_ptcl.vs.control.csv
 
 </code></pre>
 <p>
@@ -554,6 +568,40 @@ Message
 </tr>
 </thead>
 <tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/mparilla/foxo/blob/75ea1842548dec5d7fd65d5d15ec8025121f4e11/analysis/gsva.Rmd" target="_blank">75ea184</a>
+</td>
+<td>
+mleukam
+</td>
+<td>
+2020-02-02
+</td>
+<td>
+wflow_git_commit(all = TRUE)
+</td>
+</tr>
+<tr>
+<td>
+html
+</td>
+<td>
+<a href="https://rawcdn.githack.com/mparilla/foxo/f76c80f5a9721f3ad929d2d5c5baf914eabc2c60/docs/gsva.html" target="_blank">f76c80f</a>
+</td>
+<td>
+mleukam
+</td>
+<td>
+2019-09-21
+</td>
+<td>
+Build site.
+</td>
+</tr>
 <tr>
 <td>
 Rmd
@@ -622,10 +670,9 @@ gsets_msig &lt;- my_gsets %&gt;%
   nest(key = &quot;human_gene_symbol&quot;) %&gt;%
   print()
 gsets_msig_list &lt;- map(gsets_msig, as.list)
-gsets_vectors &lt;- gsets_msig_list$data %&gt;%
+gsets_vectors &lt;- gsets_msig_list$key %&gt;%
   map(pull)
 names(gsets_vectors) &lt;- gsets_msig %&gt;% pull(gs_name)
-gsets_vectors
 str(gsets_vectors)</code></pre>
 </div>
 <div id="prepare-expression-data" class="section level2">
@@ -633,22 +680,13 @@ str(gsets_vectors)</code></pre>
 <pre class="r"><code>expr_matrix &lt;- exprs(tcl_eset)
 expr_matrix[1:5, 1:5]</code></pre>
 <p>Convert affymetrix probe IDs to gene symbols</p>
-<pre class="r"><code>mart &lt;- useMart(&quot;ENSEMBL_MART_ENSEMBL&quot;)
-mart &lt;- useDataset(&quot;hsapiens_gene_ensembl&quot;, mart)
-annotLookup &lt;- getBM(
-  mart = mart,
-  attributes = c(
-    &quot;affy_hg_u133_plus_2&quot;,
-    &quot;ensembl_gene_id&quot;,
-    &quot;gene_biotype&quot;,
-    &quot;external_gene_name&quot;),
-  filter = &quot;affy_hg_u133_plus_2&quot;,
-  values = rownames(exprs(tcl_eset)),
-  uniqueRows = TRUE)</code></pre>
 <p>##Filtering</p>
 <div id="valid-gene-names" class="section level4">
 <h4>Valid gene names</h4>
-<pre class="r"><code># apply new rownames
+<pre class="r"><code># read in annotLookup
+annotLookup &lt;- readRDS(&quot;output/annotLookup.rds&quot;)
+
+# apply new rownames
 # keep only one entry per probe name
 new_rnames &lt;- rownames(expr_matrix) %&gt;%
   enframe() %&gt;%
@@ -759,10 +797,19 @@ write_csv(expr_matrix, &quot;output/expr_matrix.csv&quot;)</code></pre>
                 annotation = NULL,
                 method = &quot;gsva&quot;,
                 mx.diff = TRUE,
-                verbose = TRUE)</code></pre>
-<p>GSVA results</p>
+                verbose = TRUE)
+
+saveRDS(tcl_es, &quot;output/tcl_es.rds&quot;)</code></pre>
+</div>
+<div id="gsva-results" class="section level1">
+<h1>GSVA results</h1>
+<pre class="r"><code># read in expressionset
+tcl_eset &lt;- readRDS(&quot;output/tcl_eset.rds&quot;)
+
+# read in GSVA results
+tcl_es &lt;- readRDS(&quot;output/tcl_es.rds&quot;)</code></pre>
 <pre class="r"><code># pull out group membership
-group_lookup &lt;- pheno_data %&gt;%
+group_lookup &lt;- pData(tcl_eset) %&gt;%
   rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
   as_tibble() %&gt;%
   dplyr::select(sample_id, collapsed_group) %&gt;%
@@ -782,26 +829,192 @@ tcl_gsva_tidy &lt;- tcl_es %&gt;%
   gather(key = gene_set, value = gsva_score, -sample_id, -disease) %&gt;%
   mutate(gene_set = as.factor(gene_set),
          gene_set = fct_recode(gene_set,
-                               &quot;Bakker FOXO3 targets&quot; = &quot;BAKKER_FOXO3_TARGETS_UP&quot;,
-                               &quot;Delpuech FOXO3 targets&quot; = &quot;DELPUECH_FOXO3_TARGETS_UP&quot;,
-                               &quot;Predicted FOXO3 targets&quot; = &quot;FOXO3_01&quot;,
-                               &quot;Genes expressed in wt \nbut not FOXO1_FOXO3 KO&quot; = &quot;GSE21678_WT_VS_FOXO1_FOXO3_KO_TREG_UP&quot;)) %&gt;%
+                               &quot;Bakker et al.\nFOXO3 targets&quot; = &quot;BAKKER_FOXO3_TARGETS_UP&quot;,
+                               &quot;Delpuech et al.\nFOXO3 targets&quot; = &quot;DELPUECH_FOXO3_TARGETS_UP&quot;,
+                               &quot;Predicted \nFOXO3 targets&quot; = &quot;FOXO3_01&quot;,
+                               &quot;Wild type vs. \nFOXO1/O3 DKO&quot; = &quot;GSE21678_WT_VS_FOXO1_FOXO3_KO_TREG_UP&quot;)) %&gt;%
   group_by(gene_set) %&gt;%
-  print()
-  
-# plot gsva scores in boxplots
+  print()</code></pre>
+<div id="plots" class="section level2">
+<h2>Plots</h2>
+<pre class="r"><code># plot gsva scores in boxplots
 plot1 &lt;- ggplot(data = tcl_gsva_tidy, aes(x = gene_set, y = gsva_score, fill = disease)) +
   geom_boxplot() +
   theme_classic() +
   theme(axis.text.x = element_text(angle = 40, hjust = 1)) +
   geom_hline(yintercept = 0, linetype = 3) +
-  scale_fill_nejm(alpha = 0.7) +
+  scale_fill_d3() +
   ggtitle(&quot;Gene Set Expression by Individual Samples per Disease Group&quot;) +
   xlab(&quot;Gene Set&quot;) +
   ylab(&quot;GSVA Score&quot;) +
   labs(fill = &quot;Disease&quot;)
 
-plot1</code></pre>
+plot1
+
+# PTCL v control only
+tcl_gsva_ptcl &lt;- tcl_gsva_tidy %&gt;% 
+  dplyr::filter(disease %in% c(&quot;PTCL&quot;, &quot;control&quot;)) %&gt;%
+  mutate(disease = fct_drop(disease)) %&gt;%
+  mutate(disease = ifelse(disease == &quot;PTCL&quot;, &quot;PTCL-NOS&quot;, &quot;Control&quot;)) %&gt;%
+  print()
+
+tcl_gsva_ptcl %&gt;% summary(&quot;disease&quot;)
+
+plot2 &lt;- ggplot(data = tcl_gsva_ptcl, aes(x = disease, y = gsva_score, fill = disease)) +
+  expand_limits(y = -0.5) +
+  geom_boxplot() +
+  theme_classic() +
+  facet_grid(. ~ gene_set) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 12), strip.text = element_text(size = 8)) +
+  geom_hline(yintercept = 0, linetype = 3) +
+  scale_fill_manual(values = c(&quot;azure4&quot;, &quot;white&quot;)) +
+  ggtitle(&quot;&quot;) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;GSVA Score&quot;) +
+  theme(legend.position = &quot;none&quot;) +
+  stat_compare_means(aes(group = disease), label = &quot;p.format&quot;,  label.y = 0.55) +
+  scale_y_continuous(breaks = c(-0.5, -0.25, 0, 0.25, 0.5)) 
+plot2
+# width 460
+# height 420
+
+# alternate boxplot version of ptcl vs control only
+plot3 &lt;- ggplot(data = tcl_gsva_ptcl, aes(x = disease, y = gsva_score, color = disease)) +
+  expand_limits(y = -0.5) +
+  stat_summary(fun.data = &quot;mean_sdl&quot;, fun.args = list(mult = 1), 
+                 geom = &quot;crossbar&quot;, width = 0.5) +
+  geom_quasirandom(alpha = 0.3) +
+  theme_classic() +
+  facet_grid(. ~ gene_set) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 12), strip.text = element_text(size = 8)) +
+  geom_hline(yintercept = 0, linetype = 3) +
+  scale_fill_manual(values = c(&quot;azure4&quot;, &quot;white&quot;)) +
+  ggtitle(&quot;&quot;) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;GSVA Score&quot;) +
+  theme(legend.position = &quot;none&quot;) +
+  stat_compare_means(aes(group = disease), label = &quot;p.format&quot;,  label.y = 0.55) +
+  scale_y_continuous(breaks = c(-0.5, -0.25, 0, 0.25, 0.5)) +
+  scale_color_viridis(begin = 0.25, end = 0.6, discrete = TRUE)
+plot3
+
+# dotplot version of ptcl vs control only
+library(viridis)
+plot4 &lt;- ggplot(data = tcl_gsva_ptcl, aes(x = disease, y = gsva_score, fill = disease, color = disease)) +
+  expand_limits(y = -0.5) +
+  stat_summary(fun.data = &quot;mean_sdl&quot;, fun.args = list(mult = 1), 
+                 geom = &quot;pointrange&quot;, size = 1) +
+  geom_quasirandom(alpha = 0.3) +
+  theme_classic() +
+  facet_grid(. ~ gene_set) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 12), strip.text = element_text(size = 8)) +
+  geom_hline(yintercept = 0, linetype = 3) +
+  scale_fill_manual(values = c(&quot;azure4&quot;, &quot;white&quot;)) +
+  ggtitle(&quot;&quot;) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;GSVA Score&quot;) +
+  theme(legend.position = &quot;none&quot;) +
+  stat_compare_means(aes(group = disease), label = &quot;p.format&quot;,  label.y = 0.55) +
+  scale_y_continuous(breaks = c(-0.5, -0.25, 0, 0.25, 0.5)) +
+  scale_color_viridis(begin = 0.25, end = 0.6, discrete = TRUE)
+plot4
+
+# violin plot version of ptcl vs control only
+plot5 &lt;- ggplot(data = tcl_gsva_ptcl, aes(x = disease, y = gsva_score, fill = disease)) +
+  expand_limits(y = -0.5) +
+  geom_violin() +
+  theme_classic() +
+  facet_grid(. ~ gene_set) +
+  theme(axis.text.x = element_text(angle = 60, hjust = 1, size = 12), strip.text = element_text(size = 8)) +
+  geom_hline(yintercept = 0, linetype = 3) +
+  scale_fill_manual(values = c(&quot;azure4&quot;, &quot;white&quot;)) +
+  ggtitle(&quot;&quot;) +
+  xlab(&quot;&quot;) +
+  ylab(&quot;GSVA Score&quot;) +
+  theme(legend.position = &quot;none&quot;) +
+  stat_compare_means(aes(group = disease), label = &quot;p.format&quot;,  label.y = 0.55) +
+  scale_y_continuous(breaks = c(-0.5, -0.25, 0, 0.25, 0.5)) 
+plot5
+
+ggsave(&quot;output/paper_figures/fig1b.png&quot;, plot2, width = 4.6, height = 4.2, units = &quot;in&quot;)</code></pre>
+<div id="define-ptcl-subgroups" class="section level3">
+<h3>Define PTCL subgroups</h3>
+<pre class="r"><code># normalized and filtered gene expression matrix
+expr_matrix_norm[1:5, 1:5]
+
+# phenotype data
+tcl_eset &lt;- readRDS(&quot;output/tcl_eset.rds&quot;)
+pheno_data &lt;- pData(tcl_eset) %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;% 
+  print()
+
+# GSVA score results
+tcl_es &lt;- readRDS(&quot;output/tcl_es.rds&quot;) %&gt;%
+  as.matrix() %&gt;%
+  t() %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  print()
+
+# merge GSVA scores into pheno data
+pheno_data_gsva &lt;- pheno_data %&gt;%
+  left_join(tcl_es) %&gt;%
+  dplyr::select(sample_id, bakker = starts_with(&quot;BAKKER&quot;), delpuech = starts_with(&quot;DELPUECH&quot;), pred_foxo3 = starts_with(&quot;FOXO3_01&quot;), foxo1_foxo3_upreg = starts_with(&quot;GSE21678_&quot;), everything()) 
+
+# check collpased groups 
+pheno_data_gsva %&gt;% 
+  group_by(collapsed_group) %&gt;%
+  summarize(n = n())
+
+# filter for only PTCL cases
+pdata_ptcl &lt;- pheno_data_gsva %&gt;%
+  dplyr::filter(collapsed_group == &quot;PTCL&quot;) %&gt;%
+  print()
+
+# how many are consensus positive calls from experimental gene sets (excluding large &quot;predicted&quot; gene targets)? 
+# 30
+pdata_ptcl_grp &lt;- pdata_ptcl %&gt;%
+  mutate(foxo_consensus = ifelse(bakker &lt; 0, &quot;not_active&quot;,
+                                  ifelse(delpuech &lt; 0, &quot;not_active&quot;,
+                                         ifelse(foxo1_foxo3_upreg &lt; 0, &quot;not_active&quot;, &quot;active&quot;))))
+
+pdata_ptcl_grp %&gt;% group_by(foxo_consensus) %&gt;% summarize(n = n())
+
+pdata_select &lt;- pdata_ptcl_grp %&gt;%
+  dplyr::select(sample_id, 
+                foxo_consensus,
+                bakker, 
+                delpuech, 
+                foxo1_foxo3_upreg, 
+                pred_foxo3, 
+                dataset) %&gt;%
+  mutate(foxo_active = ifelse(foxo_consensus == &quot;active&quot;, 1, 0),
+         foxo_active = as.numeric(foxo_active)) %&gt;%
+  mutate(is_gse6338 = ifelse(dataset == &quot;GSE6338&quot;, 1, 0),
+         is_gse6338 = as.numeric(is_gse6338)) %&gt;%
+  dplyr::select(sample_id, foxo_active, is_gse6338, bakker, delpuech, foxo1_foxo3_upreg, pred_foxo3) %&gt;%
+  print()
+
+# check if foxo cases are evenly represented in the datasets
+table(pdata_select$foxo_active, pdata_select$is_gse6338)
+# not evenly represented - gse6338 has only 3 foxo active cases
+# previous PCA analysis showed significant differences between datasets is dominant source of variance
+# filter out gse6338 cases
+
+pdata_clean &lt;- pdata_select %&gt;%
+  dplyr::filter(is_gse6338 == 0) %&gt;%
+  print()
+
+is.na(pdata_clean)
+
+pdata &lt;- pdata_clean %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;sample_id&quot;)
+
+pdata[1:5, 1:5]</code></pre>
 <p>Test results for significance</p>
 <pre class="r"><code>tcl_gsva_tidy
 
@@ -841,7 +1054,7 @@ predicted &lt;- tidy(TukeyHSD(mod_predicted)) %&gt;%
   print()
 
 tcl_gsva_ko &lt;- tcl_gsva_tidy %&gt;%
-  dplyr::filter(gene_set == &quot;Genes expressed in wt \nbut not FOXO1_FOXO3 KO&quot;)
+  dplyr::filter(gene_set == &quot;Upregulated in wt \nvs FOXO1_FOXO3 KO&quot;)
 mod_ko &lt;- aov(gsva_score ~ disease, data = tcl_gsva_ko) 
 summary(mod_ko)
 KO &lt;- tidy(TukeyHSD(mod_ko)) %&gt;% 
@@ -861,6 +1074,8 @@ pairwise_comparisons &lt;- bakker %&gt;%
 </p>
 <div id="workflowr-sessioninfo" class="collapse">
 <pre class="r"><code>sessionInfo()</code></pre>
+</div>
+</div>
 </div>
 </div>
 
