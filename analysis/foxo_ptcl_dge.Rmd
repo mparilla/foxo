@@ -1,0 +1,16 @@
+---
+title: "foxo_ptcl_dge"
+author: "mleukam"
+date: "2020-02-02"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Introduction
+
+
+```{r}
+tcl_eset_foxo3_active <- readRDS("output/tcl_eset_foxo3_active.rds")
+```
+

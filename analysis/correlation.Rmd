@@ -1,0 +1,452 @@
+---
+title: "correlation"
+author: "mleukam"
+date: "2019-12-13"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Setup
+
+Clear workspace
+```{r}
+rm(list = ls())
+```
+
+Set default to not run chunks when knitting
+(long operations in notebook make updating html output time prohibitive)
+```{r}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Load packages
+```{r}
+# PCA and visualization
+library(PCAtools)
+
+# clustering
+library(MineICA)
+library(fastICA)
+
+# basics
+library(Biobase)
+library(parallel)
+library(tidyverse)
+```
+
+Read in data
+```{r}
+# normalized and filtered gene expression matrix from `gsva.Rmd`
+expr_matrix <- read_csv("output/expr_matrix.csv") %>%
+  as.data.frame() %>%
+  column_to_rownames(var = "gene") %>%
+  as.matrix()
+
+# phenotype data
+tcl_eset <- readRDS("output/tcl_eset.rds")
+pheno_data <- pData(tcl_eset) %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "sample_id") %>%
+  as_tibble() %>% 
+  print()
+
+# GSVA score results
+tcl_es <- readRDS("output/tcl_es.rds") %>%
+  as.matrix() %>%
+  t() %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "sample_id") %>%
+  as_tibble() %>%
+  print()
+
+# merge GSVA scores into pheno data
+pheno_data_gsva <- pheno_data %>%
+  left_join(tcl_es) %>%
+  dplyr::select(sample_id, bakker = starts_with("BAKKER"), delpuech = starts_with("DELPUECH"), pred_foxo3 = starts_with("FOXO3_01"), foxo1_foxo3_upreg = starts_with("GSE21678_"), everything()) 
+```
+
+## Define Groups
+```{r}
+pheno_data_gsva %>% 
+  group_by(collapsed_group) %>%
+  summarize(n = n())
+
+pdata_ptcl <- pheno_data_gsva %>%
+  dplyr::filter(collapsed_group == "PTCL") %>%
+  print()
+
+# how many are consensus positive calls from experimental gene sets (excluding large "predicted" gene targets)? 
+# 30
+pdata_ptcl_grp <- pdata_ptcl %>%
+  mutate(foxo_consensus = ifelse(bakker < 0, "not_active",
+                                  ifelse(delpuech < 0, "not_active",
+                                         ifelse(foxo1_foxo3_upreg < 0, "not_active", "active"))))
+
+pdata_ptcl_grp %>% group_by(foxo_consensus) %>% summarize(n = n())
+
+pdata_select <- pdata_ptcl_grp %>%
+  dplyr::select(sample_id, 
+                foxo_consensus,
+                bakker, 
+                delpuech, 
+                foxo1_foxo3_upreg, 
+                pred_foxo3, 
+                dataset) %>%
+  mutate(foxo_active = ifelse(foxo_consensus == "active", 1, 0),
+         foxo_active = as.numeric(foxo_active)) %>%
+  # add marker variable for source
+  mutate(is_gse6338 = ifelse(dataset == "GSE6338", 1, 0),
+         is_gse6338 = as.numeric(is_gse6338)) %>%
+  dplyr::select(sample_id, foxo_active, is_gse6338, bakker, delpuech, foxo1_foxo3_upreg, pred_foxo3) %>%
+  print()
+
+table(pdata_select$foxo_active, pdata_select$is_gse6338)
+
+summary(as.factor(is.na(pdata_select)))
+
+pdata <- pdata_select %>%
+  as.data.frame() %>%
+  column_to_rownames(var = "sample_id")
+
+pdata[1:5, 1:5]
+
+# filter the expression data to match the samples in our pdata
+dim(expr_matrix)
+expr_matrix_filt <- expr_matrix[, which(colnames(expr_matrix) %in% rownames(pdata))]
+dim(expr_matrix_filt)
+
+# check that sample names match exactly between pdata and expression data 
+all(colnames(expr_matrix_filt) == rownames(pdata))
+```
+
+## PCA
+PCA standard workflow documentation here: https://github.com/kevinblighe/PCAtools
+
+#### Ungrouped expression data
+
+```{r}
+p <- pca(expr_matrix_filt, metadata = pdata, removeVar = 0.1)
+screeplot(p)
+biplot(p)
+pairsplot(p)
+plotloadings(p)
+eigencorplot(p, metavars = c("foxo_active",
+                             "bakker",
+                             "delpuech",
+                             "foxo1_foxo3_upreg",
+                             "pred_foxo3",
+                             "is_gse6338"))
+biplot(p,
+    lab = paste0(p$metadata$is_gse6338),
+    colby = 'foxo_active',
+    hline = 0, vline = 0,
+    legendPosition = 'right')
+# the major thing this PCA is detecting is the differences between the datasets
+
+# filter out gse6338
+pdata_filt <- pdata %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "sample_id") %>%
+  as_tibble() %>%
+  dplyr::filter(is_gse6338 == "0") %>%
+  as.data.frame() %>%
+  column_to_rownames(var = "sample_id")
+pdata_filt[1:5, 1:5]
+
+# filter the expression data to match the samples in our pdata
+dim(expr_matrix)
+expr_matrix_filt2 <- expr_matrix[, which(colnames(expr_matrix) %in% rownames(pdata_filt))]
+dim(expr_matrix_filt2)
+
+# check that sample names match exactly between pdata and expression data 
+all(colnames(expr_matrix_filt2) == rownames(pdata_filt))
+
+# repeat PCA
+p2 <- pca(expr_matrix_filt2, metadata = pdata_filt, removeVar = 0.1)
+screeplot(p2)
+biplot(p2)
+pairsplot(p2)
+plotloadings(p2)
+eigencorplot(p2, metavars = c("foxo_active",
+                             "bakker",
+                             "delpuech",
+                             "foxo1_foxo3_upreg",
+                             "pred_foxo3"))
+
+# plot pca with foxo_active cases marked
+biplot(p2,
+    colby = 'foxo_active',
+    hline = 0, vline = 0,
+    legendPosition = 'right',
+    lab = NULL)
+
+# pairs plot with foxo_active cases marked
+pairsplot(p2,
+    components = getComponents(p, c(1:10)),
+    triangle = TRUE, trianglelabSize = 12,
+    hline = 0, vline = 0,
+    pointSize = 0.4,
+    gridlines.major = FALSE, gridlines.minor = FALSE,
+    colby = 'foxo_active',
+    title = 'Pairs plot', 
+    plotaxes = FALSE,
+    margingaps = unit(c(-0.01, -0.01, -0.01, -0.01), 'cm'))
+
+eigencorplot(p2,
+    components = getComponents(p, 1:27),
+    metavars = c("foxo_active",
+                 "foxo1_foxo3_upreg",
+                 "delpuech",
+                 "bakker",
+                 "pred_foxo3"),
+    col = c('darkblue', 'blue2', 'white', 'red2', 'darkred'),
+    cexCorval = 0.7,
+    colCorval = 'white',
+    fontCorval = 2,
+    posLab = 'bottomleft',
+    rotLabX = 45,
+    posColKey = 'top',
+    cexLabColKey = 1.5,
+    scale = TRUE,
+    main = 'PC1-27 clinical correlations',
+    colFrame = 'white',
+    plotRsquared = FALSE)
+
+pairsplot(p2,
+    components = getComponents(p, c(1, 2, 5, 6)),
+    triangle = FALSE,
+    hline = 0, vline = 0,
+    pointSize = 0.8,
+    gridlines.major = FALSE, gridlines.minor = FALSE,
+    colby = 'foxo_active',
+    title = 'Pairs plot', plotaxes = TRUE,
+    margingaps = unit(c(0.1, 0.1, 0.1, 0.1), 'cm'))
+
+plotloadings(p2,
+    components = getComponents(p2, c(1, 2, 5, 6)),
+    rangeRetain = 0.03,
+    labSize = 3.0,
+    title = 'Loadings plot',
+    caption = 'Top 3% variables',
+    shape = 24,
+    col = c('blue', 'white', 'red'),
+    drawConnectors = TRUE)
+
+plotloadings(p2,
+    components = getComponents(p, c(1, 2, 5, 6)),
+    rangeRetain = 0.1,
+    labSize = 3.0,
+    absolute = FALSE,
+    title = 'Loadings plot',
+    subtitle = 'Misc PCs',
+    caption = 'Top 5% variables',
+    shape = 23, shapeSizeRange = c(1, 16),
+    col = c('white', 'red'),
+    drawConnectors = FALSE)
+
+eigencorplot(p2,
+    components = getComponents(p, c(1, 2, 5, 6)),
+    metavars = c("foxo_active",
+                 "foxo1_foxo3_upreg",
+                 "delpuech",
+                 "bakker",
+                 "pred_foxo3"),
+    col = c('white', 'cornsilk1', 'gold', 'forestgreen', 'darkgreen'),
+    cexCorval = 1.2,
+    fontCorval = 2,
+    posLab = 'all',
+    rotLabX = 45,
+    scale = TRUE,
+    main = bquote(Principal ~ component ~ Pearson ~ r^2 ~ clinical ~ correlates),
+    plotRsquared = TRUE,
+    corFUN = 'pearson',
+    corUSE = 'pairwise.complete.obs',
+    signifSymbols = c('****', '***', '**', '*', ''),
+    signifCutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1))
+```
+
+#### FOXO active vs nonactive
+
+```{r}
+toptable_foxoactivevsnon <- read_csv("output/toptable_foxoactivevsnon.csv")
+
+pdata_no6338 <- pdata %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "sample_id") %>%
+  as_tibble() %>%
+  dplyr::filter(is_gse6338 == 0) %>%
+  dplyr::select(-is_gse6338) %>%
+  print()
+
+extra_data <- pData(tcl_eset) %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "sample_id") %>%
+  as_tibble() %>%
+  right_join(pdata_no6338) %>%
+  dplyr::select(sample_id, foxo_active, everything()) %>%
+  column_to_rownames(var = "sample_id") %>%
+  as.data.frame()
+extra_data[1:5, 1:5]
+dim(extra_data)
+summary(as.factor(extra_data$foxo_active))
+```
+
+## ICA
+
+Format data - need a data matrix with n rows representing observations and p columns representing variables
+
+Following MineICA vignette:
+https://www.bioconductor.org/packages/release/bioc/vignettes/MineICA/inst/doc/MineICA.pdf
+
+```{r}
+# read in expressionset
+tcl_eset <- readRDS("output/tcl_eset.rds")
+
+# get expression matrix
+expr_matrix <- exprs(tcl_eset)
+
+# filter expression matrix to include only those cases that passed quality checks in the PCA analysis above
+keepers <- pdata_no6338 %>% pull(sample_id)
+
+expr_matrix_filt <- t(expr_matrix) %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "sample_id") %>%
+  dplyr::filter(sample_id %in% keepers) %>%
+  column_to_rownames(var = "sample_id") %>%
+  as.matrix() %>%
+  t()
+expr_matrix_filt[1:5, 1:5]
+dim(expr_matrix_filt)
+  
+# get lookup table
+annotLookup <- readRDS("output/annotLookup.rds")
+
+# apply new rownames
+# keep only one entry per probe name
+new_rnames <- rownames(expr_matrix_filt) %>%
+  enframe() %>%
+  dplyr::select(affy_hg_u133_plus_2 = value) %>%
+  left_join(annotLookup) %>%
+  distinct(affy_hg_u133_plus_2, .keep_all = TRUE) %>%
+  pull(external_gene_name) 
+gnames_expr_matrix <- expr_matrix_filt
+rownames(gnames_expr_matrix) <- new_rnames
+
+# remove "NA" gene names
+dim(gnames_expr_matrix)
+gnames_expr_matrix_nona <- gnames_expr_matrix %>%
+  as.data.frame() %>%
+  rownames_to_column(var = "gene_name") %>%
+  filter(gene_name != is.na(gene_name)) %>%
+  column_to_rownames(var = "gene_name") %>%
+  as.matrix()
+gnames_expr_matrix_nona[1:5, 1:5]
+dim(gnames_expr_matrix_nona)
+
+# collapse identical gene names by averaging
+dim(gnames_expr_matrix_nona)
+expr_matrix_collapsed <- avereps(gnames_expr_matrix_nona)
+dim(expr_matrix_collapsed)
+
+# update pheno data to match
+identical(rownames(extra_data), colnames(expr_matrix_collapsed))
+var_data = as.data.frame(colnames(extra_data))
+rownames(var_data) <- colnames(extra_data)
+extra_data_annoDF <- AnnotatedDataFrame(data = extra_data, varMetadata = var_data)
+
+# remake expressionset
+tcl_eset_foxo3_active <- ExpressionSet(assayData = expr_matrix_collapsed,
+                               phenoData = extra_data_annoDF,
+                               annotation = paste0(annotation(tcl_eset), 
+                                                   " Rownames in expression matrix converted from gene chip probe names to HUGO gene names and expression averaged for each gene. Samples restricted to single dataset assigned FOXO3 activity score from PCA analysis."))
+
+# write out for later use
+saveRDS(tcl_eset_foxo3_active, "output/tcl_eset_foxo3_active.rds")
+```
+
+
+```{r}
+# we restrict the data to the 10,000 features with the highest IQR
+es_10k <- selectFeatures_IQR(tcl_eset_foxo3_active, 10000)
+
+# update annotation
+annotation(es_10k) <- paste0(annotation(tcl_eset_foxo3_active), " Filtered for 10k genes with highest IQR.")
+annotation(es_10k)
+```
+
+The ICA algorithm fastICA, is implemented in R and may be run with function runICA. FastICA relies on random initializations and the estimated components may vary between iterations. A way to alleviate this problem is to run fastICA several times, cluster the estimates, and use as the final estimates the centrotypes of the clusters. This strategy is proposed in the matlab package icasso Johan Himberg et al. [2004]. The function clusterFastICARuns implements this strategy and can be used to estimate the components.
+
+```{r}
+set.seed(313)
+
+library(parallel)
+# Random initializations are used for each iteration of FastICA
+# Estimates are clustered using hierarchical clustering with average linkage
+res <- clusterFastICARuns(X = exprs(es_10k), 
+                          nbComp = 5, 
+                          alg.type = "parallel", 
+                          nbIt = 10,
+                          funClus = "hclust",
+                          method = "average")
+str(res)
+```
+
+Before building an IcaSet instance, we need to create a MineICAParams instance that will contain a few parameters used during the analysis of the ICA decomposition.
+You need to specify the directory where you would like to put the outputs of the analysis (slot resPath), the threshold applied to the projection values used to select the contributing elements (slot selCutoff), and the threshold you would like to use for statistical significance (slot pvalCutoff).
+
+Make annotation database notes here:
+https://bioconductor.org/packages/release/bioc/vignettes/AnnotationForge/inst/doc/SQLForge.pdf
+```{r}
+## build params
+params <- buildMineICAParams(resPath = "es_10k/", selCutoff = 3, pvalCutoff = 0.05)
+
+## define the reference samples if any, here no normal sample is available
+refSamples_es_10k <- character(0)
+
+# The function buildIcaSet encompasses the step of feature annotation. During the annotation step (either performed using the annotation package or biomaRt) if several features are available for a same gene, the median value across those features is attributed to the gene. Data can also be provided at the final annotation level (e.g dat and S are already indexed by gene ids), in that case please use alreadyAnnot=TRUE in the function buildIcaSet so that no annotation will be performed. We can now build the object icaSetMainz with help of function buildIcaSet:
+resBuild <- buildIcaSet(params = params, 
+                        A = data.frame(res$A), 
+                        S = data.frame(res$S),
+                        dat = data.frame(exprs(es_10k)),
+                        pData = pData(es_10k),
+                        alreadyAnnot = TRUE,
+                        refSamples = refSamples_es_10k)
+
+icaSet10k <- resBuild$icaSet
+icaSet10k
+params <- resBuild$params
+params
+featureNames(icaSet10k)[1:5]
+geneNames(icaSet10k)[1:5]
+```
+
+Select the contributing features or genes: When applying ICA decomposition to genomic data, for example here gene expression data, the distribution of the gene projections on the ICs is expected to be super-Gaussian: a large portion of genes follows a (super-)Gaussian centered at zero and a small portion belongs to an outgrowth located on the right and/or on the left of the distribution. In order to select the elements belonging to this outgrowth, we used the conventional way based on a threshold. The thresholds can typically be 3 or 4 standard deviations from the mean. We refer to the resulting selected genes as the “contributing genes”.
+
+```{r}
+## Extract the contributing genes
+contrib <- selectContrib(icaSet10k, cutoff = 3, level = "genes")
+
+## Show the first contributing genes of the fomponents
+sort(abs(contrib[[1]]),decreasing = TRUE)[1:10]
+sort(abs(contrib[[2]]),decreasing = TRUE)[1:10]
+sort(abs(contrib[[3]]),decreasing = TRUE)[1:10]
+sort(abs(contrib[[4]]),decreasing = TRUE)[1:10]
+sort(abs(contrib[[5]]),decreasing = TRUE)[1:10]
+
+## select the annotations of interest
+varLabels(icaSet10k)
+
+# restrict the phenotype data to the variables of interest
+keepVar <- c("foxo_active", "delpuech", "bakker", "pred_foxo3", "foxo1_foxo3_upreg")
+# specify the variables that should be treated as character
+icaSet10k$clust <- as.character(icaSet10k$foxo_active)
+
+## Run the analysis of the ICA decomposition
+# only enrichment in KEGG gene sets are tested
+runAn(params = params, 
+      icaSet = icaSet10k, 
+      keepVar = keepVar, 
+      dbGOstats = "KEGG",
+      funClus = "Mclust")
+```

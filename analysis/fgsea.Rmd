@@ -1,0 +1,172 @@
+---
+title: "fgsea"
+author: "mleukam"
+date: "2019-12-12"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Setup
+
+```{r}
+# Clear workspace
+rm(list = ls())
+```
+
+Set default to not run chunks when knitting
+```{r}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+```{r}
+library(tidyverse)
+library(data.table)
+library(fgsea)
+library(ggplot2)
+library(msigdbr)
+```
+
+#### Get gene sets from MSigDb
+
+Source: https://cran.r-project.org/web/packages/msigdbr/vignettes/msigdbr-intro.html
+
+```{r}
+# Get hallmark gene sets from MSigDb (mouse)
+msigdbr_show_species()
+m_df = msigdbr(species = "Homo sapiens", category = "H")
+head(m_df)
+
+# format for fgsea
+gs_list_hallmark = m_df %>% split(x = .$gene_symbol, f = .$gs_name)
+str(gs_list_hallmark)
+
+# Get all human gene sets for relevant biological processes
+# Include Hallmark and curated C2 biological process sets
+# Exclude chromosome position gene sets
+# Exclude miRNA / regulatory motif gene sets
+# Include GO terms (C5)
+# Include computational gene sets from cancer microarray data (C4)
+# Include microarray 'oncogenic' signatures
+# Include immunologic signatures, manual curation from human and mouse studies (C7)
+m_df_total = msigdbr(species = "Homo sapiens") %>%
+  dplyr::filter(gs_cat %in% c("H", "C2", "C4", "C5", "C7"))
+m_df_total
+
+# get number of gene sets in each category
+summary(as.factor(m_df_total$gs_cat))
+
+# format for fgsea
+gs_list_total = m_df_total %>% 
+  split(x = .$gene_symbol, f = .$gs_name)
+str(gs_list_total)
+```
+
+Read in toptables
+```{r}
+ptclvscontrol <- read_csv("output/toptable_ptcl.vs.control.csv")
+```
+
+Source for GSEA file prep (supplemental method 1): https://www.nature.com/articles/s41596-018-0103-9
+Reimand et al "Pathway enrichment analysis and visualization of omics data using g:Profiler, GSEA, Cytoscape and EnrichmentMap" Nature Methods Jan 2019
+
+Create a two-column rank (.RNK) file of all gene IDs and corresponding scores to for GSEA pre-ranked analysis. To run GSEA in pre-ranked mode, you need a two column RNK file with gene/protein/probe name (column 1) and the associated score (column 2). The first column should contain the same type of gene IDs used in the pathway gene-set (GMT) file. GSEA will look for enrichment in the set of most differentially
+expressed genes at the top of the list as well as those at the bottom of the list. Genes at the top of the list are more highly expressed in class A of samples while genes at the bottom are highly expressed in class B. A score can be computed by multiplying direction (sign) of fold change and logarithm of p-value for each gene.
+
+```{r}
+# calculate ranks
+ranks_ptcl = sign(ptclvscontrol$logFC) * -log10(ptclvscontrol$P.Value)
+names(ranks_ptcl) <- ptclvscontrol$gene_symbol
+ranks_ptcl <- sort(ranks_ptcl, decreasing = TRUE)
+head(ranks_ptcl)
+tail(ranks_ptcl)
+summary(duplicated(names(ranks_ptcl)))
+```
+
+## GSEA
+
+#### Hallmark gene sets only
+
+Source: http://bioconductor.org/packages/devel/bioc/vignettes/fgsea/inst/doc/fgsea-tutorial.html
+
+Purrr functions
+
+```{r}
+library(BiocParallel)
+
+fgsea_hallmark <- function(ranks){
+  temp <- fgsea(pathways = gs_list_hallmark, 
+                                  stats = ranks,
+                                  minSize = 15, 
+                                  maxSize = 500,
+                                  nperm = 10000)
+  
+  collapsedPathways <- collapsePathways(temp[order(pval)][padj < 0.01],
+                                        gs_list_hallmark, 
+                                        ranks)
+  mainPathways <- temp[pathway %in% collapsedPathways$mainPathways][
+                         order(-NES)]
+  mainPathways
+}
+
+# apply function
+hallmark_results <- fgsea_hallmark(ranks_ptcl)
+hallmark_results
+
+# display function
+mainpaths <- function(df){
+  pathways <- df %>% pull(pathway)
+  pathways
+}
+
+# apply display function to results
+mainpaths(hallmark_results)
+
+# plots
+pathways <- hallmark_results %>% arrange(desc(abs(NES))) %>% pull(pathway) %>% head(25)
+gsea_plot <- plotGseaTable(gs_list_hallmark[pathways], 
+                       ranks_ptcl, 
+                       hallmark_results) 
+
+```
+
+#### Larger collection of gene sets
+```{r}
+library(BiocParallel)
+
+fgsea_res <- function(ranks){
+  temp <- fgsea(pathways = gs_list_total, 
+                                  stats = ranks,
+                                  minSize = 15, 
+                                  maxSize = 500,
+                                  nperm = 10000)
+  
+  collapsedPathways <- collapsePathways(temp[order(pval)][padj < 0.01],
+                                        gs_list_total, 
+                                        ranks)
+  mainPathways <- temp[pathway %in% collapsedPathways$mainPathways][
+                         order(-NES)]
+  mainPathways
+}
+
+# apply function
+fgsea_results <- fgsea_res(ranks_ptcl)
+fgsea_results
+
+# display function
+mainpaths <- function(df){
+  pathways <- df %>% pull(pathway)
+  pathways
+}
+
+# apply display function to results
+mainpaths(fgsea_results)
+
+# plots
+pathways <- fgsea_results %>% arrange(desc(abs(NES))) %>% pull(pathway)
+pathways_25 <- fgsea_results %>% arrange(desc(abs(NES))) %>% pull(pathway) %>% head(25)
+gsea_plot <- plotGseaTable(gs_list_total[pathways], 
+                       ranks_ptcl, 
+                       fgsea_results)
+
+```

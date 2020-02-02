@@ -1,0 +1,239 @@
+---
+title: "pathway_enrichment"
+author: "mleukam"
+date: "2019-12-17"
+output: workflowr::wflow_html
+editor_options:
+  chunk_output_type: console
+---
+
+## Setup
+
+Clear the workspace
+```{r}
+rm(list = ls())
+```
+
+Set default to not run chunks when knitting
+(long operations in notebook make updating html output time prohibitive)
+```{r}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+Load packages
+```{r}
+# tidyverse
+library(tidyverse)
+
+# bioconductor
+library(fgsea)
+library(org.Hs.eg.db)
+library(msigdbr)
+library(clusterProfiler)
+
+# plotting
+library(viridis)
+```
+
+Read in data
+```{r}
+# foxo gene sets
+gsets_4 <- readRDS("output/gsets_4.rds")
+
+# lookup table for gene names
+# read in conversion table for gene IDs
+annotLookup <- readRDS("output/annotLookup.rds")
+```
+
+Add Entrez identifiers to gencode lookup table
+```{r}
+ext_symbols <- annotLookup %>%
+  pull(external_gene_name) %>%
+  print()
+  
+entrez <- mapIds(org.Hs.eg.db, ext_symbols, 'ENTREZID', 'SYMBOL') %>%
+  enframe() %>%
+  dplyr::rename(external_gene_name = name, entrez_id = value) %>%
+  print()
+
+aL_entrez <- annotLookup %>%
+  left_join(entrez) %>%
+  distinct(external_gene_name, entrez_id) %>%
+  as_tibble() %>%
+  mutate(entrez_id = ifelse(entrez_id == "<NA>", NA, entrez_id)) %>%
+  print()
+```
+
+## Looking at the gene sets
+
+#### GO enrichment
+```{r}
+# get gene list of entrez IDs for each FOXO targets gene list
+go_gene_list <- gsets_4 %>%
+  map(function(vect){enframe(vect) %>% dplyr::select(external_gene_name = value)}) %>%
+  map(function(df){left_join(df, aL_entrez) %>% dplyr::select(entrez_id)}) %>%
+  # remove any that don't map to entrez ids
+  map(function(df){drop_na(df, entrez_id)}) %>%
+  map(function(df){pull(df, entrez_id)}) %>%
+  print()
+str(go_gene_list)
+
+# get gene universe list
+go_gene_universe <- aL_entrez %>% 
+  drop_na(entrez_id) %>%
+  pull(entrez_id)
+str(go_gene_universe)
+
+# make combined list of all foxo3 targets
+foxo3_total <- c(go_gene_list[[1]], 
+                 go_gene_list[[2]], 
+                 go_gene_list[[3]], 
+                 go_gene_list[[4]]) %>%
+  unique()
+# initially 555 with 540 unique entries
+
+# make combined list of just the foxo3 targets used to generate consensus score (excluding computationally predicted targets)
+foxo3_select <- c(go_gene_list[[1]], 
+                 go_gene_list[[2]], 
+                 go_gene_list[[4]]) %>%
+  unique()
+# 302 unique genes
+
+# function to get enriched/overrepresented GO
+eGOall <- function(vect){
+  ego_bp <- enrichGO(
+    gene = vect,
+    OrgDb = org.Hs.eg.db,
+    ont = "all",
+    pvalueCutoff = 0.05,
+    pAdjustMethod = "BH",
+    universe = go_gene_universe,
+    qvalueCutoff = 0.1)
+}
+
+# apply to individual lists
+ego_list_results <- map(go_gene_list, eGOall)
+
+# apply to combined list
+ego_all_results <- eGOall(foxo3_total)
+ego_all_results <- setReadable(ego_all_results, OrgDb = org.Hs.eg.db)
+ego_all_results
+
+#------------------------------------
+# apply to select list
+ego_select_results <- eGOall(foxo3_select)
+ego_select_results <- setReadable(ego_select_results, OrgDb = org.Hs.eg.db)
+ego_select_results
+
+#----------------------------------
+# function to get separate enrichment results for each GO subtype
+eGO <- function(vect){
+  ego_bp <- enrichGO(
+    gene = vect,
+    OrgDb = org.Hs.eg.db,
+    ont = "BP",
+    pvalueCutoff = 0.05,
+    pAdjustMethod = "BH",
+    universe = go_gene_universe,
+    qvalueCutoff = 0.1)
+  ego_mf <- enrichGO(
+    gene = vect,
+    OrgDb = org.Hs.eg.db,
+    ont = "MF",
+    pvalueCutoff = 0.05,
+    pAdjustMethod = "BH",
+    universe = go_gene_universe,
+    qvalueCutoff = 0.1)
+  ego_cc <- enrichGO(
+    gene = vect,
+    OrgDb = org.Hs.eg.db,
+    ont = "CC",
+    pvalueCutoff = 0.05,
+    pAdjustMethod = "BH",
+    universe = go_gene_universe,
+    qvalueCutoff = 0.1)
+  list("BP" = ego_bp, "MF" = ego_mf, "CC" = ego_cc)
+}
+
+# apply function to gene lists
+eGO_list <- map(go_gene_list, eGO)
+
+# get results fot total
+
+# function to convert to gene names
+#setReadable(ego_bp, OrgDb = org.Hs.eg.db)
+
+# function to simplify results
+egosimp <- function(ego){
+  clusterProfiler::simplify(ego)
+  ego
+}
+
+# apply function to total results
+eGO_total_simp <- map(eGO_total, egosimp)
+
+# apply function to individual results
+# eGO_simp <- map(eGO_list, egosimp)
+```
+
+#### GO enrichment Plots of gene sets
+```{r}
+# dot plot combined list
+dotplot(ego_all_results)
+
+# heatmap combined list
+hm <- heatplot(ego_all_results) +
+  theme(axis.text.x = element_blank())
+
+#------------------------------------------------------
+# dot plot select list
+dotplot(ego_select_results)
+
+# heatmap combined list
+hm_select <- heatplot(ego_select_results) 
+hm_select
+
+# get vector of gene names used on x axis
+go_axis_label <- hm_select$data$Gene %>%
+  as.character()
+str(go_axis_label)
+
+# 9.5 x 2
+```
+
+Get fold change data
+```{r}
+toptable_ptclvscontrol <- read_csv("output/toptable_ptcl.vs.control.csv")
+toptable_ptclvscontrol
+
+# Need to get in format of geneList
+# data(geneList)
+# str(geneList)
+# Named num [1:12495] 4.57 4.51 4.42 4.14 #3.88 ...
+# - attr(*, "names")= chr [1:12495] "4312" #"8318" "10874" "55143" ...
+
+geneList_df <- go_axis_label %>%
+  enframe() %>%
+  dplyr::select(gene_symbol = value) %>%
+  left_join(toptable_ptclvscontrol) %>%
+  dplyr::select(gene_symbol, logFC) %>%
+  print()
+
+geneList_symbols <- geneList_df$gene_symbol
+str(geneList_symbols)
+geneList <- geneList_df$logFC %>% as.numeric()
+names(geneList) <- geneList_symbols
+str(geneList)
+```
+
+#### Additional plots
+```{r}
+# heatmap combined list
+hm_select_fc <- heatplot(ego_select_results, foldChange = geneList) +
+  scale_fill_viridis() +
+  labs(fill = "logFC") +
+  theme(legend.key.size = unit(0.4, "cm"))
+hm_select_fc
+
+ggsave("output/paper_figures/fig1c.png", hm_select_fc, width = 10.5, height = 2, units = "in")
+```
