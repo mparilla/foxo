@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="mleukam" />
+
+<meta name="date" content="2019-12-13" />
+
+<title>correlation</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/cosmo.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 51px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h2 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h3 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h4 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h5 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.section h6 {
+  padding-top: 56px;
+  margin-top: -56px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">foxo</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<!-- Add a small amount of space between sections. -->
+<style type="text/css">
+div.section {
+  padding-top: 12px;
+}
+</style>
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">correlation</h1>
+<h4 class="author">mleukam</h4>
+<h4 class="date">2019-12-13</h4>
+
+</div>
+
+
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-report" data-toggle="collapse" data-target="#workflowr-report">
+<span class="glyphicon glyphicon-list" aria-hidden="true"></span> workflowr <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span>
+</button>
+</p>
+<div id="workflowr-report" class="collapse">
+<ul class="nav nav-tabs">
+<li class="active">
+<a data-toggle="tab" href="#summary">Summary</a>
+</li>
+<li>
+<a data-toggle="tab" href="#checks"> Checks <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> </a>
+</li>
+<li>
+<a data-toggle="tab" href="#versions">Past versions</a>
+</li>
+</ul>
+<div class="tab-content">
+<div id="summary" class="tab-pane fade in active">
+<p>
+<strong>Last updated:</strong> 2020-02-02
+</p>
+<p>
+<strong>Checks:</strong> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> 7 <span class="glyphicon glyphicon-exclamation-sign text-danger" aria-hidden="true"></span> 0
+</p>
+<p>
+<strong>Knit directory:</strong> <code>foxo/</code> <span class="glyphicon glyphicon-question-sign" aria-hidden="true" title="This is the local directory in which the code in this file was executed."> </span>
+</p>
+<p>
+This reproducible <a href="http://rmarkdown.rstudio.com">R Markdown</a> analysis was created with <a
+  href="https://github.com/jdblischak/workflowr">workflowr</a> (version 1.6.0). The <em>Checks</em> tab describes the reproducibility checks that were applied when the results were created. The <em>Past versions</em> tab lists the development history.
+</p>
+<hr>
+</div>
+<div id="checks" class="tab-pane fade">
+<div id="workflowr-checks" class="panel-group">
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRMarkdownfilestronguptodate"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>R Markdown file:</strong> up-to-date </a>
+</p>
+</div>
+<div id="strongRMarkdownfilestronguptodate" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great! Since the R Markdown file has been committed to the Git repository, you know the exact version of the code that produced these results.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongEnvironmentstrongempty"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Environment:</strong> empty </a>
+</p>
+</div>
+<div id="strongEnvironmentstrongempty" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! The global environment was empty. Objects defined in the global environment can affect the analysis in your R Markdown file in unknown ways. For reproduciblity it’s best to always run the code in an empty environment.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSeedstrongcodesetseed20190703code"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Seed:</strong> <code>set.seed(20190703)</code> </a>
+</p>
+</div>
+<div id="strongSeedstrongcodesetseed20190703code" class="panel-collapse collapse">
+<div class="panel-body">
+<p>The command <code>set.seed(20190703)</code> was run prior to running the code in the R Markdown file. Setting a seed ensures that any results that rely on randomness, e.g. subsampling or permutations, are reproducible.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongSessioninformationstrongrecorded"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Session information:</strong> recorded </a>
+</p>
+</div>
+<div id="strongSessioninformationstrongrecorded" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Recording the operating system, R version, and package versions is critical for reproducibility.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongCachestrongnone"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Cache:</strong> none </a>
+</p>
+</div>
+<div id="strongCachestrongnone" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Nice! There were no cached chunks for this analysis, so you can be confident that you successfully produced the results during this run.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongFilepathsstrongrelative"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>File paths:</strong> relative </a>
+</p>
+</div>
+<div id="strongFilepathsstrongrelative" class="panel-collapse collapse">
+<div class="panel-body">
+<p>Great job! Using relative paths to the files within your workflowr project makes it easier to run your code on other machines.</p>
+</div>
+</div>
+</div>
+<div class="panel panel-default">
+<div class="panel-heading">
+<p class="panel-title">
+<a data-toggle="collapse" data-parent="#workflowr-checks" href="#strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree43bec2eb1f79a8cff0353401f3ca40429f413a6dtargetblank43bec2ea"> <span class="glyphicon glyphicon-ok text-success" aria-hidden="true"></span> <strong>Repository version:</strong> <a href="https://github.com/mparilla/foxo/tree/43bec2eb1f79a8cff0353401f3ca40429f413a6d" target="_blank">43bec2e</a> </a>
+</p>
+</div>
+<div id="strongRepositoryversionstrongahrefhttpsgithubcommparillafoxotree43bec2eb1f79a8cff0353401f3ca40429f413a6dtargetblank43bec2ea" class="panel-collapse collapse">
+<div class="panel-body">
+<p>
+Great! You are using Git for version control. Tracking code development and connecting the code version to the results is critical for reproducibility. The version displayed above was the version of the Git repository at the time these results were generated. <br><br> Note that you need to be careful to ensure that all relevant files for the analysis have been committed to Git prior to generating the results (you can use <code>wflow_publish</code> or <code>wflow_git_commit</code>). workflowr only checks the R Markdown file, but you know if there are other scripts or data files that it depends on. Below is the status of the Git repository when the results were generated:
+</p>
+<pre><code>
+Ignored files:
+    Ignored:    .DS_Store
+    Ignored:    .Rhistory
+    Ignored:    .Rproj.user/
+    Ignored:    data/GSE14879/
+    Ignored:    data/GSE19069/
+    Ignored:    data/GSE6338/
+    Ignored:    output/.DS_Store
+    Ignored:    output/combined_exprs.rds
+    Ignored:    output/tcl_eset.rds
+
+Untracked files:
+    Untracked:  code/grn.R
+    Untracked:  es_10k/
+    Untracked:  output/annotLookup.rds
+    Untracked:  output/differential_gene_expression_ptcl_vs_control.xlsx
+    Untracked:  output/mart.rds
+    Untracked:  output/paper_figures/
+    Untracked:  output/tcl_es.rds
+    Untracked:  output/tcl_eset_foxo3_active.rds
+    Untracked:  output/toptable_foxoactivevsnon.csv
+    Untracked:  output/toptable_ptcl.vs.control.csv
+
+</code></pre>
+<p>
+Note that any generated files, e.g. HTML, png, CSS, etc., are not included in this status report because it is ok for generated content to have uncommitted changes.
+</p>
+</div>
+</div>
+</div>
+</div>
+<hr>
+</div>
+<div id="versions" class="tab-pane fade">
+
+<p>
+These are the previous versions of the R Markdown and HTML files. If you’ve configured a remote Git repository (see <code>?wflow_git_remote</code>), click on the hyperlinks in the table below to view them.
+</p>
+<div class="table-responsive">
+<table class="table table-condensed table-hover">
+<thead>
+<tr>
+<th>
+File
+</th>
+<th>
+Version
+</th>
+<th>
+Author
+</th>
+<th>
+Date
+</th>
+<th>
+Message
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+Rmd
+</td>
+<td>
+<a href="https://github.com/mparilla/foxo/blob/43bec2eb1f79a8cff0353401f3ca40429f413a6d/analysis/correlation.Rmd" target="_blank">43bec2e</a>
+</td>
+<td>
+mleukam
+</td>
+<td>
+2020-02-02
+</td>
+<td>
+new notebooks
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<hr>
+</div>
+</div>
+</div>
+<div id="setup" class="section level2">
+<h2>Setup</h2>
+<p>Clear workspace</p>
+<pre class="r"><code>rm(list = ls())</code></pre>
+<p>Set default to not run chunks when knitting (long operations in notebook make updating html output time prohibitive)</p>
+<pre class="r"><code>knitr::opts_chunk$set(eval = FALSE)</code></pre>
+<p>Load packages</p>
+<pre class="r"><code># PCA and visualization
+library(PCAtools)
+
+# clustering
+library(MineICA)
+library(fastICA)
+
+# basics
+library(Biobase)
+library(parallel)
+library(tidyverse)</code></pre>
+<p>Read in data</p>
+<pre class="r"><code># normalized and filtered gene expression matrix from `gsva.Rmd`
+expr_matrix &lt;- read_csv(&quot;output/expr_matrix.csv&quot;) %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;gene&quot;) %&gt;%
+  as.matrix()
+
+# phenotype data
+tcl_eset &lt;- readRDS(&quot;output/tcl_eset.rds&quot;)
+pheno_data &lt;- pData(tcl_eset) %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;% 
+  print()
+
+# GSVA score results
+tcl_es &lt;- readRDS(&quot;output/tcl_es.rds&quot;) %&gt;%
+  as.matrix() %&gt;%
+  t() %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  print()
+
+# merge GSVA scores into pheno data
+pheno_data_gsva &lt;- pheno_data %&gt;%
+  left_join(tcl_es) %&gt;%
+  dplyr::select(sample_id, bakker = starts_with(&quot;BAKKER&quot;), delpuech = starts_with(&quot;DELPUECH&quot;), pred_foxo3 = starts_with(&quot;FOXO3_01&quot;), foxo1_foxo3_upreg = starts_with(&quot;GSE21678_&quot;), everything()) </code></pre>
+</div>
+<div id="define-groups" class="section level2">
+<h2>Define Groups</h2>
+<pre class="r"><code>pheno_data_gsva %&gt;% 
+  group_by(collapsed_group) %&gt;%
+  summarize(n = n())
+
+pdata_ptcl &lt;- pheno_data_gsva %&gt;%
+  dplyr::filter(collapsed_group == &quot;PTCL&quot;) %&gt;%
+  print()
+
+# how many are consensus positive calls from experimental gene sets (excluding large &quot;predicted&quot; gene targets)? 
+# 30
+pdata_ptcl_grp &lt;- pdata_ptcl %&gt;%
+  mutate(foxo_consensus = ifelse(bakker &lt; 0, &quot;not_active&quot;,
+                                  ifelse(delpuech &lt; 0, &quot;not_active&quot;,
+                                         ifelse(foxo1_foxo3_upreg &lt; 0, &quot;not_active&quot;, &quot;active&quot;))))
+
+pdata_ptcl_grp %&gt;% group_by(foxo_consensus) %&gt;% summarize(n = n())
+
+pdata_select &lt;- pdata_ptcl_grp %&gt;%
+  dplyr::select(sample_id, 
+                foxo_consensus,
+                bakker, 
+                delpuech, 
+                foxo1_foxo3_upreg, 
+                pred_foxo3, 
+                dataset) %&gt;%
+  mutate(foxo_active = ifelse(foxo_consensus == &quot;active&quot;, 1, 0),
+         foxo_active = as.numeric(foxo_active)) %&gt;%
+  # add marker variable for source
+  mutate(is_gse6338 = ifelse(dataset == &quot;GSE6338&quot;, 1, 0),
+         is_gse6338 = as.numeric(is_gse6338)) %&gt;%
+  dplyr::select(sample_id, foxo_active, is_gse6338, bakker, delpuech, foxo1_foxo3_upreg, pred_foxo3) %&gt;%
+  print()
+
+table(pdata_select$foxo_active, pdata_select$is_gse6338)
+
+summary(as.factor(is.na(pdata_select)))
+
+pdata &lt;- pdata_select %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;sample_id&quot;)
+
+pdata[1:5, 1:5]
+
+# filter the expression data to match the samples in our pdata
+dim(expr_matrix)
+expr_matrix_filt &lt;- expr_matrix[, which(colnames(expr_matrix) %in% rownames(pdata))]
+dim(expr_matrix_filt)
+
+# check that sample names match exactly between pdata and expression data 
+all(colnames(expr_matrix_filt) == rownames(pdata))</code></pre>
+</div>
+<div id="pca" class="section level2">
+<h2>PCA</h2>
+<p>PCA standard workflow documentation here: <a href="https://github.com/kevinblighe/PCAtools" class="uri">https://github.com/kevinblighe/PCAtools</a></p>
+<div id="ungrouped-expression-data" class="section level4">
+<h4>Ungrouped expression data</h4>
+<pre class="r"><code>p &lt;- pca(expr_matrix_filt, metadata = pdata, removeVar = 0.1)
+screeplot(p)
+biplot(p)
+pairsplot(p)
+plotloadings(p)
+eigencorplot(p, metavars = c(&quot;foxo_active&quot;,
+                             &quot;bakker&quot;,
+                             &quot;delpuech&quot;,
+                             &quot;foxo1_foxo3_upreg&quot;,
+                             &quot;pred_foxo3&quot;,
+                             &quot;is_gse6338&quot;))
+biplot(p,
+    lab = paste0(p$metadata$is_gse6338),
+    colby = &#39;foxo_active&#39;,
+    hline = 0, vline = 0,
+    legendPosition = &#39;right&#39;)
+# the major thing this PCA is detecting is the differences between the datasets
+
+# filter out gse6338
+pdata_filt &lt;- pdata %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  dplyr::filter(is_gse6338 == &quot;0&quot;) %&gt;%
+  as.data.frame() %&gt;%
+  column_to_rownames(var = &quot;sample_id&quot;)
+pdata_filt[1:5, 1:5]
+
+# filter the expression data to match the samples in our pdata
+dim(expr_matrix)
+expr_matrix_filt2 &lt;- expr_matrix[, which(colnames(expr_matrix) %in% rownames(pdata_filt))]
+dim(expr_matrix_filt2)
+
+# check that sample names match exactly between pdata and expression data 
+all(colnames(expr_matrix_filt2) == rownames(pdata_filt))
+
+# repeat PCA
+p2 &lt;- pca(expr_matrix_filt2, metadata = pdata_filt, removeVar = 0.1)
+screeplot(p2)
+biplot(p2)
+pairsplot(p2)
+plotloadings(p2)
+eigencorplot(p2, metavars = c(&quot;foxo_active&quot;,
+                             &quot;bakker&quot;,
+                             &quot;delpuech&quot;,
+                             &quot;foxo1_foxo3_upreg&quot;,
+                             &quot;pred_foxo3&quot;))
+
+# plot pca with foxo_active cases marked
+biplot(p2,
+    colby = &#39;foxo_active&#39;,
+    hline = 0, vline = 0,
+    legendPosition = &#39;right&#39;,
+    lab = NULL)
+
+# pairs plot with foxo_active cases marked
+pairsplot(p2,
+    components = getComponents(p, c(1:10)),
+    triangle = TRUE, trianglelabSize = 12,
+    hline = 0, vline = 0,
+    pointSize = 0.4,
+    gridlines.major = FALSE, gridlines.minor = FALSE,
+    colby = &#39;foxo_active&#39;,
+    title = &#39;Pairs plot&#39;, 
+    plotaxes = FALSE,
+    margingaps = unit(c(-0.01, -0.01, -0.01, -0.01), &#39;cm&#39;))
+
+eigencorplot(p2,
+    components = getComponents(p, 1:27),
+    metavars = c(&quot;foxo_active&quot;,
+                 &quot;foxo1_foxo3_upreg&quot;,
+                 &quot;delpuech&quot;,
+                 &quot;bakker&quot;,
+                 &quot;pred_foxo3&quot;),
+    col = c(&#39;darkblue&#39;, &#39;blue2&#39;, &#39;white&#39;, &#39;red2&#39;, &#39;darkred&#39;),
+    cexCorval = 0.7,
+    colCorval = &#39;white&#39;,
+    fontCorval = 2,
+    posLab = &#39;bottomleft&#39;,
+    rotLabX = 45,
+    posColKey = &#39;top&#39;,
+    cexLabColKey = 1.5,
+    scale = TRUE,
+    main = &#39;PC1-27 clinical correlations&#39;,
+    colFrame = &#39;white&#39;,
+    plotRsquared = FALSE)
+
+pairsplot(p2,
+    components = getComponents(p, c(1, 2, 5, 6)),
+    triangle = FALSE,
+    hline = 0, vline = 0,
+    pointSize = 0.8,
+    gridlines.major = FALSE, gridlines.minor = FALSE,
+    colby = &#39;foxo_active&#39;,
+    title = &#39;Pairs plot&#39;, plotaxes = TRUE,
+    margingaps = unit(c(0.1, 0.1, 0.1, 0.1), &#39;cm&#39;))
+
+plotloadings(p2,
+    components = getComponents(p2, c(1, 2, 5, 6)),
+    rangeRetain = 0.03,
+    labSize = 3.0,
+    title = &#39;Loadings plot&#39;,
+    caption = &#39;Top 3% variables&#39;,
+    shape = 24,
+    col = c(&#39;blue&#39;, &#39;white&#39;, &#39;red&#39;),
+    drawConnectors = TRUE)
+
+plotloadings(p2,
+    components = getComponents(p, c(1, 2, 5, 6)),
+    rangeRetain = 0.1,
+    labSize = 3.0,
+    absolute = FALSE,
+    title = &#39;Loadings plot&#39;,
+    subtitle = &#39;Misc PCs&#39;,
+    caption = &#39;Top 5% variables&#39;,
+    shape = 23, shapeSizeRange = c(1, 16),
+    col = c(&#39;white&#39;, &#39;red&#39;),
+    drawConnectors = FALSE)
+
+eigencorplot(p2,
+    components = getComponents(p, c(1, 2, 5, 6)),
+    metavars = c(&quot;foxo_active&quot;,
+                 &quot;foxo1_foxo3_upreg&quot;,
+                 &quot;delpuech&quot;,
+                 &quot;bakker&quot;,
+                 &quot;pred_foxo3&quot;),
+    col = c(&#39;white&#39;, &#39;cornsilk1&#39;, &#39;gold&#39;, &#39;forestgreen&#39;, &#39;darkgreen&#39;),
+    cexCorval = 1.2,
+    fontCorval = 2,
+    posLab = &#39;all&#39;,
+    rotLabX = 45,
+    scale = TRUE,
+    main = bquote(Principal ~ component ~ Pearson ~ r^2 ~ clinical ~ correlates),
+    plotRsquared = TRUE,
+    corFUN = &#39;pearson&#39;,
+    corUSE = &#39;pairwise.complete.obs&#39;,
+    signifSymbols = c(&#39;****&#39;, &#39;***&#39;, &#39;**&#39;, &#39;*&#39;, &#39;&#39;),
+    signifCutpoints = c(0, 0.0001, 0.001, 0.01, 0.05, 1))</code></pre>
+</div>
+<div id="foxo-active-vs-nonactive" class="section level4">
+<h4>FOXO active vs nonactive</h4>
+<pre class="r"><code>toptable_foxoactivevsnon &lt;- read_csv(&quot;output/toptable_foxoactivevsnon.csv&quot;)
+
+pdata_no6338 &lt;- pdata %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  dplyr::filter(is_gse6338 == 0) %&gt;%
+  dplyr::select(-is_gse6338) %&gt;%
+  print()
+
+extra_data &lt;- pData(tcl_eset) %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  as_tibble() %&gt;%
+  right_join(pdata_no6338) %&gt;%
+  dplyr::select(sample_id, foxo_active, everything()) %&gt;%
+  column_to_rownames(var = &quot;sample_id&quot;) %&gt;%
+  as.data.frame()
+extra_data[1:5, 1:5]
+dim(extra_data)
+summary(as.factor(extra_data$foxo_active))</code></pre>
+</div>
+</div>
+<div id="ica" class="section level2">
+<h2>ICA</h2>
+<p>Format data - need a data matrix with n rows representing observations and p columns representing variables</p>
+<p>Following MineICA vignette: <a href="https://www.bioconductor.org/packages/release/bioc/vignettes/MineICA/inst/doc/MineICA.pdf" class="uri">https://www.bioconductor.org/packages/release/bioc/vignettes/MineICA/inst/doc/MineICA.pdf</a></p>
+<pre class="r"><code># read in expressionset
+tcl_eset &lt;- readRDS(&quot;output/tcl_eset.rds&quot;)
+
+# get expression matrix
+expr_matrix &lt;- exprs(tcl_eset)
+
+# filter expression matrix to include only those cases that passed quality checks in the PCA analysis above
+keepers &lt;- pdata_no6338 %&gt;% pull(sample_id)
+
+expr_matrix_filt &lt;- t(expr_matrix) %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;sample_id&quot;) %&gt;%
+  dplyr::filter(sample_id %in% keepers) %&gt;%
+  column_to_rownames(var = &quot;sample_id&quot;) %&gt;%
+  as.matrix() %&gt;%
+  t()
+expr_matrix_filt[1:5, 1:5]
+dim(expr_matrix_filt)
+  
+# get lookup table
+annotLookup &lt;- readRDS(&quot;output/annotLookup.rds&quot;)
+
+# apply new rownames
+# keep only one entry per probe name
+new_rnames &lt;- rownames(expr_matrix_filt) %&gt;%
+  enframe() %&gt;%
+  dplyr::select(affy_hg_u133_plus_2 = value) %&gt;%
+  left_join(annotLookup) %&gt;%
+  distinct(affy_hg_u133_plus_2, .keep_all = TRUE) %&gt;%
+  pull(external_gene_name) 
+gnames_expr_matrix &lt;- expr_matrix_filt
+rownames(gnames_expr_matrix) &lt;- new_rnames
+
+# remove &quot;NA&quot; gene names
+dim(gnames_expr_matrix)
+gnames_expr_matrix_nona &lt;- gnames_expr_matrix %&gt;%
+  as.data.frame() %&gt;%
+  rownames_to_column(var = &quot;gene_name&quot;) %&gt;%
+  filter(gene_name != is.na(gene_name)) %&gt;%
+  column_to_rownames(var = &quot;gene_name&quot;) %&gt;%
+  as.matrix()
+gnames_expr_matrix_nona[1:5, 1:5]
+dim(gnames_expr_matrix_nona)
+
+# collapse identical gene names by averaging
+dim(gnames_expr_matrix_nona)
+expr_matrix_collapsed &lt;- avereps(gnames_expr_matrix_nona)
+dim(expr_matrix_collapsed)
+
+# update pheno data to match
+identical(rownames(extra_data), colnames(expr_matrix_collapsed))
+var_data = as.data.frame(colnames(extra_data))
+rownames(var_data) &lt;- colnames(extra_data)
+extra_data_annoDF &lt;- AnnotatedDataFrame(data = extra_data, varMetadata = var_data)
+
+# remake expressionset
+tcl_eset_foxo3_active &lt;- ExpressionSet(assayData = expr_matrix_collapsed,
+                               phenoData = extra_data_annoDF,
+                               annotation = paste0(annotation(tcl_eset), 
+                                                   &quot; Rownames in expression matrix converted from gene chip probe names to HUGO gene names and expression averaged for each gene. Samples restricted to single dataset assigned FOXO3 activity score from PCA analysis.&quot;))
+
+# write out for later use
+saveRDS(tcl_eset_foxo3_active, &quot;output/tcl_eset_foxo3_active.rds&quot;)</code></pre>
+<pre class="r"><code># we restrict the data to the 10,000 features with the highest IQR
+es_10k &lt;- selectFeatures_IQR(tcl_eset_foxo3_active, 10000)
+
+# update annotation
+annotation(es_10k) &lt;- paste0(annotation(tcl_eset_foxo3_active), &quot; Filtered for 10k genes with highest IQR.&quot;)
+annotation(es_10k)</code></pre>
+<p>The ICA algorithm fastICA, is implemented in R and may be run with function runICA. FastICA relies on random initializations and the estimated components may vary between iterations. A way to alleviate this problem is to run fastICA several times, cluster the estimates, and use as the final estimates the centrotypes of the clusters. This strategy is proposed in the matlab package icasso Johan Himberg et al. [2004]. The function clusterFastICARuns implements this strategy and can be used to estimate the components.</p>
+<pre class="r"><code>set.seed(313)
+
+library(parallel)
+# Random initializations are used for each iteration of FastICA
+# Estimates are clustered using hierarchical clustering with average linkage
+res &lt;- clusterFastICARuns(X = exprs(es_10k), 
+                          nbComp = 5, 
+                          alg.type = &quot;parallel&quot;, 
+                          nbIt = 10,
+                          funClus = &quot;hclust&quot;,
+                          method = &quot;average&quot;)
+str(res)</code></pre>
+<p>Before building an IcaSet instance, we need to create a MineICAParams instance that will contain a few parameters used during the analysis of the ICA decomposition. You need to specify the directory where you would like to put the outputs of the analysis (slot resPath), the threshold applied to the projection values used to select the contributing elements (slot selCutoff), and the threshold you would like to use for statistical significance (slot pvalCutoff).</p>
+<p>Make annotation database notes here: <a href="https://bioconductor.org/packages/release/bioc/vignettes/AnnotationForge/inst/doc/SQLForge.pdf" class="uri">https://bioconductor.org/packages/release/bioc/vignettes/AnnotationForge/inst/doc/SQLForge.pdf</a></p>
+<pre class="r"><code>## build params
+params &lt;- buildMineICAParams(resPath = &quot;es_10k/&quot;, selCutoff = 3, pvalCutoff = 0.05)
+
+## define the reference samples if any, here no normal sample is available
+refSamples_es_10k &lt;- character(0)
+
+# The function buildIcaSet encompasses the step of feature annotation. During the annotation step (either performed using the annotation package or biomaRt) if several features are available for a same gene, the median value across those features is attributed to the gene. Data can also be provided at the final annotation level (e.g dat and S are already indexed by gene ids), in that case please use alreadyAnnot=TRUE in the function buildIcaSet so that no annotation will be performed. We can now build the object icaSetMainz with help of function buildIcaSet:
+resBuild &lt;- buildIcaSet(params = params, 
+                        A = data.frame(res$A), 
+                        S = data.frame(res$S),
+                        dat = data.frame(exprs(es_10k)),
+                        pData = pData(es_10k),
+                        alreadyAnnot = TRUE,
+                        refSamples = refSamples_es_10k)
+
+icaSet10k &lt;- resBuild$icaSet
+icaSet10k
+params &lt;- resBuild$params
+params
+featureNames(icaSet10k)[1:5]
+geneNames(icaSet10k)[1:5]</code></pre>
+<p>Select the contributing features or genes: When applying ICA decomposition to genomic data, for example here gene expression data, the distribution of the gene projections on the ICs is expected to be super-Gaussian: a large portion of genes follows a (super-)Gaussian centered at zero and a small portion belongs to an outgrowth located on the right and/or on the left of the distribution. In order to select the elements belonging to this outgrowth, we used the conventional way based on a threshold. The thresholds can typically be 3 or 4 standard deviations from the mean. We refer to the resulting selected genes as the “contributing genes”.</p>
+<pre class="r"><code>## Extract the contributing genes
+contrib &lt;- selectContrib(icaSet10k, cutoff = 3, level = &quot;genes&quot;)
+
+## Show the first contributing genes of the fomponents
+sort(abs(contrib[[1]]),decreasing = TRUE)[1:10]
+sort(abs(contrib[[2]]),decreasing = TRUE)[1:10]
+sort(abs(contrib[[3]]),decreasing = TRUE)[1:10]
+sort(abs(contrib[[4]]),decreasing = TRUE)[1:10]
+sort(abs(contrib[[5]]),decreasing = TRUE)[1:10]
+
+## select the annotations of interest
+varLabels(icaSet10k)
+
+# restrict the phenotype data to the variables of interest
+keepVar &lt;- c(&quot;foxo_active&quot;, &quot;delpuech&quot;, &quot;bakker&quot;, &quot;pred_foxo3&quot;, &quot;foxo1_foxo3_upreg&quot;)
+# specify the variables that should be treated as character
+icaSet10k$clust &lt;- as.character(icaSet10k$foxo_active)
+
+## Run the analysis of the ICA decomposition
+# only enrichment in KEGG gene sets are tested
+runAn(params = params, 
+      icaSet = icaSet10k, 
+      keepVar = keepVar, 
+      dbGOstats = &quot;KEGG&quot;,
+      funClus = &quot;Mclust&quot;)</code></pre>
+<br>
+<p>
+<button type="button" class="btn btn-default btn-workflowr btn-workflowr-sessioninfo" data-toggle="collapse" data-target="#workflowr-sessioninfo" style="display: block;">
+<span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Session information
+</button>
+</p>
+<div id="workflowr-sessioninfo" class="collapse">
+<pre class="r"><code>sessionInfo()</code></pre>
+</div>
+</div>
+
+
+<!-- Adjust MathJax settings so that all math formulae are shown using
+TeX fonts only; see
+http://docs.mathjax.org/en/latest/configuration.html.  This will make
+the presentation more consistent at the cost of the webpage sometimes
+taking slightly longer to load. Note that this only works because the
+footer is added to webpages before the MathJax javascript. -->
+<script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    "HTML-CSS": { availableFonts: ["TeX"] }
+  });
+</script>
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
